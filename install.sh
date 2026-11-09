@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -eu
 
-RELEASE_BIN="https://github.com/Kure2323/floord/releases/latest/download/floord"
+RELEASE_BIN="https://github.com/polete-bermejo/floord/releases/latest/download/floord"
 BINARY="floord"
 BINARY_PATH="/usr/local/bin/$BINARY"
 SERVICE_PATH="$HOME/.config/systemd/user"

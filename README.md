@@ -17,7 +17,7 @@ It uses the operating system's standard directories whenever available:
 ## Installation
 Execute:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Kure2323/floord/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/polete-bermejo/floord/main/install.sh | sh
 ```
 
 ## Service Guide
