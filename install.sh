@@ -1,35 +1,34 @@
 #!/usr/bin/env sh
 set -eu
 
-REPO="https://github.com/Kure2323/floord.git"
+RELEASE_BIN="https://github.com/Kure2323/floord/releases/latest/download/floord"
+BINARY="floord"
+BINARY_PATH="/usr/local/bin/$BINARY"
 SERVICE_PATH="$HOME/.config/systemd/user"
+TMP="$(mktemp)"
+trap 'rm -f "$TMP"' EXIT
 
-# Check and install Rust/Cargo
-if ! command -v cargo >/dev/null 2>&1; then
-    echo "Cargo not found. Installing Rust..."
+# Download binary
+echo "Downloading Floord..."
+curl -fsSL "$RELEASE_BIN" -o "$TMP"
 
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-fi
-
-echo "Using Cargo: $(cargo --version)"
-
-# Download and compile binary
-echo "Downloading and compiling floord..."
-cargo install --git "$REPO" --locked --force floord
-
+# Install binary
+echo "Installing Floord..."
+sudo install -m 755 "$TMP" "$BINARY_PATH"
 # Creating floord-daemon.service
 echo "
 [Unit]
 Description=Floor daemon File organizer
 [Service]
-ExecStart=$HOME/.cargo/bin/floord --delay 300 --daemon
+ExecStart=$BINARY_PATH --daemon
 Restart=on-failure
 [Install]
 WantedBy=default.target
-" > "$SERVICE_PATH/floord-daemon.service"
+" > "$SERVICE_PATH/floor-daemon.service"
 
 # Systemd
 echo "Initializing systemd service..."
+mkdir -p "$SERVICE_PATH"
 systemctl --user daemon-reload
 systemctl --user enable --now floor-daemon
 

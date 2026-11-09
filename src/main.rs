@@ -5,19 +5,22 @@ use std::path::PathBuf;
 use std::thread::sleep;
 use std::time::Duration;
 
-/// To set-up execute: floord_setup
+/// Floor daemon - Filo organizer
+/// Modify its args in '.config/systemd/user/floor-daemon.service'
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 pub struct Args {
-    /// Directory used as inbox (Default: Downloads)
+    /// Directory used as inbox [default: Downloads]
     #[arg(short, long)]
     inbox: Option<PathBuf>,
 
-    /// Seconds to wait after a file appears at inbox path
+    /// Amount of time in seconds that floord waits for a file to be moved
+    /// (watches the modified value)
     #[arg(short, long, default_value_t = 300)]
     delay: u64,
 
-    /// Executes in loop
+    /// Executes in loop/daemon-mode
+    /// Needed for the execution as a service
     #[arg(long, default_value_t = false)]
     daemon: bool,
 }
