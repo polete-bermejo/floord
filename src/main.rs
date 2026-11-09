@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use std::thread::sleep;
 use std::time::Duration;
 
-/// Floor daemon - Filo organizer
+/// Floor daemon - File organizer.
 /// Modify its args in '.config/systemd/user/floor-daemon.service'
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -19,7 +19,7 @@ pub struct Args {
     #[arg(short, long, default_value_t = 300)]
     delay: u64,
 
-    /// Executes in loop/daemon-mode
+    /// Executes in loop/daemon-mode.
     /// Needed for the execution as a service
     #[arg(long, default_value_t = false)]
     daemon: bool,
