@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use floord::service;
+use floord::saving_service;
 use std::fs::{create_dir, remove_dir_all};
 use std::path::Path;
 use std::time::Duration;
@@ -13,7 +13,7 @@ fn floord_empty_benchmark(c: &mut Criterion) {
 
     let secs = Duration::new(0, 0);
 
-    c.bench_function("empty folder", |b| b.iter(|| service(tmp, &secs)));
+    c.bench_function("empty folder", |b| b.iter(|| saving_service(tmp, &secs)));
 
     remove_dir_all(tmp).unwrap()
 }
@@ -29,7 +29,7 @@ fn floord_10k_benchmark(c: &mut Criterion) {
         create_dir(tmp.join(i.to_string())).unwrap()
     }
 
-    c.bench_function("10k not moving", |b| b.iter(|| service(tmp, &secs)));
+    c.bench_function("10k not moving", |b| b.iter(|| saving_service(tmp, &secs)));
 
     remove_dir_all(tmp).unwrap()
 }
@@ -51,7 +51,7 @@ fn floord_500_move_dirs_benchmark(c: &mut Criterion) {
                 tmp.to_path_buf()
             },
             |path| {
-                service(&path, &secs).unwrap();
+                saving_service(&path, &secs).unwrap();
             },
             criterion::BatchSize::LargeInput,
         )

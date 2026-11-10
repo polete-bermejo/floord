@@ -1,6 +1,6 @@
 use clap::Parser;
 use dirs::download_dir;
-use floord::service;
+use floord::saving_service;
 use std::path::PathBuf;
 use std::thread::sleep;
 use std::time::Duration;
@@ -46,13 +46,13 @@ fn main() {
 
     if cli_args.daemon {
         loop {
-            if let Err(error) = service(&inbox_path, &delay) {
+            if let Err(error) = saving_service(&inbox_path, &delay) {
                 eprintln!("Error: {error}")
             }
             sleep(DELAY)
         }
     } else {
-        if let Err(error) = service(&inbox_path, &delay) {
+        if let Err(error) = saving_service(&inbox_path, &delay) {
             eprintln!("Error: {error}")
         }
     }

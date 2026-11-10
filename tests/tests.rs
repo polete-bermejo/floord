@@ -1,5 +1,5 @@
 use dirs::{audio_dir, document_dir, picture_dir, video_dir};
-use floord::service;
+use floord::saving_service;
 use std::fs::{File, create_dir, remove_file};
 use std::time::Duration;
 use tempfile::{tempdir, tempdir_in};
@@ -9,7 +9,7 @@ const TEST_FILE: &str = "test_c_a_r_a_c_u_l_o";
 fn service_works_test() {
     let tmp = tempdir().unwrap();
     let secs = Duration::new(300, 0);
-    assert!(service(tmp.path(), &secs).is_ok())
+    assert!(saving_service(tmp.path(), &secs).is_ok())
 }
 
 #[test]
@@ -18,7 +18,7 @@ fn dont_move_by_duration() {
     let secs = Duration::new(300, 0);
     let probe = &tmp.path().join(TEST_FILE);
     create_dir(probe).unwrap();
-    service(tmp.path(), &secs).unwrap();
+    saving_service(tmp.path(), &secs).unwrap();
     assert!(probe.exists())
 }
 
@@ -30,7 +30,7 @@ fn move_by_duration() {
     let secs = Duration::ZERO;
     let probe = tmp.join(TEST_FILE);
     create_dir(&probe).unwrap();
-    service(tmp, &secs).unwrap();
+    saving_service(tmp, &secs).unwrap();
     assert!(!probe.exists())
 }
 
@@ -45,7 +45,7 @@ fn move_to_documents() {
 
     File::create_new(&probe).unwrap();
 
-    service(tmp.path(), &secs).unwrap();
+    saving_service(tmp.path(), &secs).unwrap();
     let destination = document_dir().unwrap().join(&test_file);
 
     assert!(!probe.exists());
@@ -64,7 +64,7 @@ fn move_to_pictures() {
 
     File::create_new(&probe).unwrap();
 
-    service(tmp.path(), &secs).unwrap();
+    saving_service(tmp.path(), &secs).unwrap();
     let destination = picture_dir().unwrap().join(&test_file);
 
     assert!(!probe.exists());
@@ -83,7 +83,7 @@ fn move_to_audio() {
 
     File::create_new(&probe).unwrap();
 
-    service(tmp.path(), &secs).unwrap();
+    saving_service(tmp.path(), &secs).unwrap();
     let destination = audio_dir().unwrap().join(&test_file);
 
     assert!(!probe.exists());
@@ -102,7 +102,7 @@ fn move_to_video() {
 
     File::create_new(&probe).unwrap();
 
-    service(tmp.path(), &secs).unwrap();
+    saving_service(tmp.path(), &secs).unwrap();
     let destination = video_dir().unwrap().join(&test_file);
 
     assert!(!probe.exists());
