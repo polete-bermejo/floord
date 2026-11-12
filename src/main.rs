@@ -7,7 +7,8 @@ use std::thread;
 use std::thread::sleep;
 use std::time::Duration;
 
-const LOOP_INTERVAL: Duration = Duration::from_millis(25);
+const O_LOOP_INTERVAL: Duration = Duration::from_millis(25);
+const C_LOOP_INTERVAL: Duration = Duration::from_mins(5);
 
 /// Floor daemon - File organizer and cleaner.
 /// Modify its args in '~/.config/systemd/user/floor-daemon.service' and reload.
@@ -90,7 +91,7 @@ fn run_organizer(cli_args: &Args) {
     if cli_args.daemon {
         loop {
             saving_service(&inbox_path, &delay);
-            sleep(LOOP_INTERVAL);
+            sleep(O_LOOP_INTERVAL);
         }
     }
     saving_service(&inbox_path, &delay);
@@ -122,7 +123,7 @@ fn run_cleanup(cli_args: &Args) {
     if cli_args.daemon {
         loop {
             cleanup_service(&paths, &span, &grace);
-            sleep(LOOP_INTERVAL);
+            sleep(C_LOOP_INTERVAL);
         }
     }
     cleanup_service(&paths, &span, &grace);
