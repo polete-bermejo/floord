@@ -6,7 +6,7 @@ pub fn rename_destination(old_path: PathBuf) -> PathBuf {
         let file_name = file_name.to_string_lossy().to_string();
         let folder = folder.to_path_buf();
 
-        let extension = new_path.extension().map(|e| e.to_os_string());
+        let extension = new_path.extension().map(std::ffi::OsStr::to_os_string);
 
         let (base_name, mut count) = match file_name.rsplit_once('(') {
             Some((name, number)) => {

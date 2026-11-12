@@ -125,7 +125,7 @@ fn shorts_directories_to_one() {
     let read_dir = read_dir(path).unwrap();
     let size = read_dir.count();
 
-    cleanup_service(&vec![path.to_path_buf()], &span, &Duration::new(10, 0));
+    cleanup_service(&vec![path], &span, &Duration::new(10, 0));
 
     let read_dir = std::fs::read_dir(path).unwrap();
     let size2 = read_dir.count();
@@ -142,7 +142,7 @@ fn move_directory_to_soon_deleted() {
     let path = tmp.path();
     create_dir(path.join(TEST_FILE)).unwrap();
 
-    cleanup_service(&vec![path.to_path_buf()], &span, &Duration::new(10, 0));
+    cleanup_service(&vec![path], &span, &Duration::new(10, 0));
     assert!(path.join(SOON_DELETED).exists());
 
     let read_dir = read_dir(path.join(SOON_DELETED)).unwrap();
@@ -160,13 +160,12 @@ fn dont_move_directory_to_soon_deleted() {
     let path = tmp.path();
     create_dir(path.join(TEST_FILE)).unwrap();
 
-    cleanup_service(&vec![path.to_path_buf()], &span, &Duration::new(10, 0));
+    cleanup_service(&vec![path], &span, &Duration::new(10, 0));
     assert!(!path.join(SOON_DELETED).exists()); // Shouldn't exist
     assert!(!path.join(SOON_DELETED).join(TEST_FILE).exists());
 
     assert!(path.join(TEST_FILE).exists());
 }
-
 
 //-------------------------------------------------------------------------------------------------
 //      PATH RENAMING TESTS
@@ -193,8 +192,6 @@ fn correct_renaming_savings() {
     assert!(unknown_path.join(second_file).exists());
     let third_file = TEST_FILE.to_owned() + "(2)";
     assert!(unknown_path.join(third_file).exists())
-
-
 }
 
 #[test]
@@ -205,20 +202,17 @@ fn correct_renaming_cleanup() {
     create_dir_all(path.join(TEST_FILE)).unwrap();
 
     let duration = Duration::ZERO;
-    cleanup_service(&vec![path.to_path_buf()], &duration, &duration); // File 0
+    cleanup_service(&vec![path], &duration, &duration); // File 0
 
     create_dir_all(path.join(TEST_FILE)).unwrap();
-    cleanup_service(&vec![path.to_path_buf()], &duration, &duration); // File 1
-
+    cleanup_service(&vec![path], &duration, &duration); // File 1
 
     create_dir_all(path.join(TEST_FILE)).unwrap();
-    cleanup_service(&vec![path.to_path_buf()], &duration, &duration); // File 2
+    cleanup_service(&vec![path], &duration, &duration); // File 2
 
     assert!(soon_deleted.join(TEST_FILE).exists());
     let second_file = TEST_FILE.to_owned() + "(1)";
     assert!(soon_deleted.join(second_file).exists());
     let third_file = TEST_FILE.to_owned() + "(2)";
     assert!(soon_deleted.join(third_file).exists())
-
-
 }

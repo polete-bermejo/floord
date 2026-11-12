@@ -7,7 +7,7 @@ use std::thread;
 use std::thread::sleep;
 use std::time::Duration;
 
-const O_LOOP_INTERVAL: Duration = Duration::from_millis(25);
+const O_LOOP_INTERVAL: Duration = Duration::from_millis(100);
 const C_LOOP_INTERVAL: Duration = Duration::from_mins(5);
 
 /// Floor daemon - File organizer and cleaner.
@@ -46,7 +46,7 @@ pub struct Args {
     #[arg(long, help_heading = "Cleanup", requires = "cleanup")]
     paths: Vec<PathBuf>,
 
-    /// Time in days till a file goes to the SoonDeleted folder
+    /// Time in days till a file goes to the `SoonDeleted` folder
     #[arg(
         long,
         help_heading = "Cleanup",
@@ -55,7 +55,7 @@ pub struct Args {
     )]
     span: u64,
 
-    /// Time in days until a file gets permanently DELETED from the SoonDeleted folder (currently not working)
+    /// Time in days until a file gets permanently DELETED from the `SoonDeleted` folder (currently not working)
     #[arg(
         long,
         help_heading = "Cleanup",
@@ -95,7 +95,7 @@ fn run_organizer(cli_args: &Args) {
         }
     }
     saving_service(&inbox_path, &delay);
-    println!("Organization done!")
+    println!("Organization done!");
 }
 
 fn run_cleanup(cli_args: &Args) {
@@ -103,21 +103,22 @@ fn run_cleanup(cli_args: &Args) {
     if paths.is_empty() {
         if let Some(got) = document_dir() {
             paths.push(got);
-        };
+        }
         if let Some(got) = audio_dir() {
             paths.push(got);
-        };
+        }
         if let Some(got) = video_dir() {
             paths.push(got);
-        };
+        }
         if let Some(got) = picture_dir() {
             paths.push(got);
-        };
+        }
     }
     if paths.is_empty() {
         eprintln!("Paths empty");
         return;
     }
+    let paths = paths.iter().map(PathBuf::as_path).collect();
     let span = Duration::from_hours(24 * cli_args.span);
     let grace = Duration::from_hours(24 * cli_args.grace);
     if cli_args.daemon {
@@ -127,7 +128,7 @@ fn run_cleanup(cli_args: &Args) {
         }
     }
     cleanup_service(&paths, &span, &grace);
-    println!("Cleanup done!")
+    println!("Cleanup done!");
 }
 
 fn main() {
@@ -144,7 +145,7 @@ fn main() {
 
     let cleanup = thread::spawn(move || {
         if cleanup_args.cleanup {
-            run_cleanup(&cleanup_args)
+            run_cleanup(&cleanup_args);
         }
     });
 
