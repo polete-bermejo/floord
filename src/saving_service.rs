@@ -31,6 +31,6 @@ fn manage_entry(dir_entry: &DirEntry, inbox_dir: &Path, delay_in_seconds: &Durat
         return Ok(());
     }
 
-    save(&dir_entry, inbox_dir);
+    save(dir_entry, inbox_dir);
     Ok(())
 }
