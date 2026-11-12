@@ -1,10 +1,14 @@
 use dirs::{audio_dir, document_dir, picture_dir, video_dir};
-use floord::saving_service;
-use std::fs::{File, create_dir, remove_file};
+use floord::{SOON_DELETED, cleanup_service, saving_service};
+use std::fs::{File, create_dir, read_dir, remove_file};
 use std::time::Duration;
 use tempfile::{tempdir, tempdir_in};
 
 const TEST_FILE: &str = "test_c_a_r_a_c_u_l_o";
+
+//-------------------------------------------------------------------------------------------------
+//      CLEANUP TESTS
+//-------------------------------------------------------------------------------------------------
 
 #[test]
 fn dont_move_by_duration() {
@@ -102,4 +106,63 @@ fn move_to_video() {
     assert!(!probe.exists());
     assert!(destination.exists());
     remove_file(destination).unwrap();
+}
+
+//-------------------------------------------------------------------------------------------------
+//      CLEANUP TESTS
+//-------------------------------------------------------------------------------------------------
+
+#[test]
+fn shorts_directories_to_one() {
+    let tmp = tempdir_in(".").unwrap();
+    let span = Duration::ZERO;
+
+    // Create 2 directories
+    let path = tmp.path();
+    create_dir(path.join(TEST_FILE)).unwrap();
+    create_dir(path.join("asdf")).unwrap();
+
+    let read_dir = read_dir(path).unwrap();
+    let size = read_dir.count();
+
+    cleanup_service(vec![path.to_path_buf()], &span, &Duration::new(10, 0));
+
+    let read_dir = std::fs::read_dir(path).unwrap();
+    let size2 = read_dir.count();
+    assert_ne!(size, size2);
+    assert_eq!(1, size2);
+    assert!(path.join(SOON_DELETED).exists());
+}
+
+#[test]
+fn move_directory_to_soon_deleted() {
+    let tmp = tempdir_in(".").unwrap();
+    let span = Duration::ZERO;
+
+    let path = tmp.path();
+    create_dir(path.join(TEST_FILE)).unwrap();
+
+    cleanup_service(vec![path.to_path_buf()], &span, &Duration::new(10, 0));
+    assert!(path.join(SOON_DELETED).exists());
+
+    let read_dir = std::fs::read_dir(path.join(SOON_DELETED)).unwrap();
+    let size = read_dir.count();
+    assert_eq!(1, size); // Assert that cleanup doesn't create duplicates
+
+    assert!(path.join(SOON_DELETED).join(TEST_FILE).exists());
+}
+
+#[test]
+fn dont_move_directory_to_soon_deleted() {
+    let tmp = tempdir_in(".").unwrap();
+    let span = Duration::new(10, 0);
+
+    let path = tmp.path();
+    create_dir(path.join(TEST_FILE)).unwrap();
+
+    cleanup_service(vec![path.to_path_buf()], &span, &Duration::new(10, 0));
+    assert!(!path.join(SOON_DELETED).exists()); // Shouldn't exist
+    assert!(!path.join(SOON_DELETED).join(TEST_FILE).exists());
+
+    assert!(path.join(TEST_FILE).exists());
 }

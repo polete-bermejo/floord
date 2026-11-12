@@ -1,5 +1,5 @@
 use crate::savings::save;
-use anyhow::Result;
+use anyhow::{Context, Result};
 use std::fs::{DirEntry, ReadDir};
 use std::path::Path;
 use std::time::{Duration, SystemTime};
@@ -8,7 +8,8 @@ use std::time::{Duration, SystemTime};
 pub fn service(inbox_dir: &Path, seconds: &Duration) {
     let read_dir: ReadDir = inbox_dir
         .read_dir()
-        .expect("[ERROR] Could not read inbox directory");
+        .context("reading inbox folder")
+        .unwrap();
 
     for entry in read_dir {
         let Ok(dir_entry) = entry else { continue };

@@ -1,3 +1,5 @@
+use crate::UNKNOWN;
+use crate::service_utils::rename_destination;
 use dirs::{audio_dir, document_dir, picture_dir, video_dir};
 use std::fs::{DirEntry, create_dir_all, rename};
 use std::path::{Path, PathBuf};
@@ -151,15 +153,15 @@ pub fn save(file: &DirEntry, inbox: &Path) {
     let Some(file_name) = file_path.file_name() else {
         return;
     };
-    let mut new_path = inbox.join("Unknown").join(file_name);
+    let mut new_path = inbox.join(UNKNOWN).join(file_name);
 
-    if file_path.is_dir() && file_name == "Unknown" {
+    if file_path.is_dir() && file_name == UNKNOWN {
         return;
     }
 
     if let Some(folder) = get_destination_folder(&file_path) {
         new_path = folder.join(file_name);
-        rename_destination(&mut new_path);
+        let new_path = rename_destination(new_path);
         let _ = rename(file_path, new_path);
         return;
     }
@@ -168,37 +170,8 @@ pub fn save(file: &DirEntry, inbox: &Path) {
     {
         create_dir_all(unknown_path).unwrap_or(());
     }
-    rename_destination(&mut new_path);
+    let new_path = rename_destination(new_path);
     let _ = rename(file_path, new_path);
-}
-
-fn rename_destination(new_path: &mut PathBuf) {
-    if let (Some(file_name), Some(folder)) = (new_path.file_stem(), new_path.parent()) {
-        let file_name = file_name.to_string_lossy().to_string();
-        let folder = folder.to_path_buf();
-
-        let extension = new_path.extension().map(|e| e.to_os_string());
-
-        let (base_name, mut count) = match file_name.rsplit_once('(') {
-            Some((name, number)) => {
-                match number.strip_suffix(')').and_then(|n| n.parse::<u32>().ok()) {
-                    Some(n) if !name.is_empty() => (name.to_string(), n + 1),
-                    _ => (file_name.clone(), 1),
-                }
-            }
-            None => (file_name.clone(), 1),
-        };
-
-        while new_path.exists() {
-            let new_name = match &extension {
-                Some(ext) => format!("{} ({}).{}", base_name, count, ext.to_string_lossy()),
-                None => format!("{base_name}({count})"),
-            };
-
-            *new_path = folder.join(new_name);
-            count += 1;
-        }
-    }
 }
 
 fn get_destination_folder(file_path: &Path) -> Option<PathBuf> {
