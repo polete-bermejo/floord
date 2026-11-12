@@ -146,7 +146,7 @@ const DOCUMENT_EXT: &[&str] = &[
 ];
 
 /// Filter and saves file in the designated path
-pub fn save(file: DirEntry, inbox: &Path) {
+pub fn save(file: &DirEntry, inbox: &Path) {
     let file_path = file.path();
     let Some(file_name) = file_path.file_name() else {
         return;
@@ -166,7 +166,7 @@ pub fn save(file: DirEntry, inbox: &Path) {
     if let Some(unknown_path) = new_path.parent()
         && !unknown_path.exists()
     {
-        create_dir_all(unknown_path).unwrap_or(())
+        create_dir_all(unknown_path).unwrap_or(());
     }
     rename_destination(&mut new_path);
     let _ = rename(file_path, new_path);
@@ -192,7 +192,7 @@ fn rename_destination(new_path: &mut PathBuf) {
         while new_path.exists() {
             let new_name = match &extension {
                 Some(ext) => format!("{} ({}).{}", base_name, count, ext.to_string_lossy()),
-                None => format!("{}({})", base_name, count),
+                None => format!("{base_name}({count})"),
             };
 
             *new_path = folder.join(new_name);

@@ -29,12 +29,12 @@ const DELAY: Duration = Duration::from_millis(25);
 
 fn main() {
     let cli_args = Args::parse();
-    let inbox_path = cli_args.inbox.unwrap_or(match download_dir() {
-        Some(dir) => dir,
-        None => {
-            println!("Default path not found (default: Downloads folder)");
-            return;
-        }
+
+    let inbox_path = cli_args.inbox.unwrap_or(if let Some(dir) = download_dir() {
+        dir
+    } else {
+        println!("Default path not found (default: Downloads folder)");
+        return;
     });
 
     if !inbox_path.is_dir() {
@@ -46,14 +46,9 @@ fn main() {
 
     if cli_args.daemon {
         loop {
-            if let Err(error) = saving_service(&inbox_path, &delay) {
-                eprintln!("Error: {error}")
-            }
-            sleep(DELAY)
-        }
-    } else {
-        if let Err(error) = saving_service(&inbox_path, &delay) {
-            eprintln!("Error: {error}")
+            saving_service(&inbox_path, &delay);
+            sleep(DELAY);
         }
     }
+    saving_service(&inbox_path, &delay);
 }

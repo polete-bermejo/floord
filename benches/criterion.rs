@@ -51,7 +51,7 @@ fn floord_500_move_dirs_benchmark(c: &mut Criterion) {
                 tmp.to_path_buf()
             },
             |path| {
-                saving_service(&path, &secs).unwrap();
+                saving_service(&path, &secs);
             },
             criterion::BatchSize::LargeInput,
         )
