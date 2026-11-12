@@ -20,7 +20,7 @@ echo "
 [Unit]
 Description=Floor daemon File organizer
 [Service]
-ExecStart=$BINARY_PATH --daemon --organizer
+ExecStart=$BINARY_PATH --daemon --organizer --cleanup
 Restart=on-failure
 [Install]
 WantedBy=default.target

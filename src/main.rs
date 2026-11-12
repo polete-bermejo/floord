@@ -16,6 +16,7 @@ const LOOP_INTERVAL: Duration = Duration::from_millis(25);
         clap::ArgGroup::new("services")
             .args(["organizer", "cleanup"])
             .required(true)
+            .multiple(true)
     ))]
 pub struct Args {
     /// Enables the inbox organizer function
