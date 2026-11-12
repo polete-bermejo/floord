@@ -125,7 +125,7 @@ fn shorts_directories_to_one() {
     let read_dir = read_dir(path).unwrap();
     let size = read_dir.count();
 
-    cleanup_service(vec![path.to_path_buf()], &span, &Duration::new(10, 0));
+    cleanup_service(&vec![path.to_path_buf()], &span, &Duration::new(10, 0));
 
     let read_dir = std::fs::read_dir(path).unwrap();
     let size2 = read_dir.count();
@@ -142,10 +142,10 @@ fn move_directory_to_soon_deleted() {
     let path = tmp.path();
     create_dir(path.join(TEST_FILE)).unwrap();
 
-    cleanup_service(vec![path.to_path_buf()], &span, &Duration::new(10, 0));
+    cleanup_service(&vec![path.to_path_buf()], &span, &Duration::new(10, 0));
     assert!(path.join(SOON_DELETED).exists());
 
-    let read_dir = std::fs::read_dir(path.join(SOON_DELETED)).unwrap();
+    let read_dir = read_dir(path.join(SOON_DELETED)).unwrap();
     let size = read_dir.count();
     assert_eq!(1, size); // Assert that cleanup doesn't create duplicates
 
@@ -160,7 +160,7 @@ fn dont_move_directory_to_soon_deleted() {
     let path = tmp.path();
     create_dir(path.join(TEST_FILE)).unwrap();
 
-    cleanup_service(vec![path.to_path_buf()], &span, &Duration::new(10, 0));
+    cleanup_service(&vec![path.to_path_buf()], &span, &Duration::new(10, 0));
     assert!(!path.join(SOON_DELETED).exists()); // Shouldn't exist
     assert!(!path.join(SOON_DELETED).join(TEST_FILE).exists());
 

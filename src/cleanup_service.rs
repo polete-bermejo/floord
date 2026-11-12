@@ -5,7 +5,7 @@ use std::fs::DirEntry;
 use std::path::PathBuf;
 use std::time::Duration;
 
-pub fn service(paths: Vec<PathBuf>, duration_old: &Duration, duration_grace: &Duration) {
+pub fn service(paths: &Vec<PathBuf>, duration_old: &Duration, duration_grace: &Duration) {
     for folder in paths {
         if let Ok(entries) = folder.read_dir() {
             for entry in entries {

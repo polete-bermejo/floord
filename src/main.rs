@@ -2,6 +2,8 @@ use clap::Parser;
 use dirs::{audio_dir, document_dir, download_dir, picture_dir, video_dir};
 use floord::{cleanup_service, saving_service};
 use std::path::PathBuf;
+use std::sync::Arc;
+use std::thread;
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -10,7 +12,11 @@ const LOOP_INTERVAL: Duration = Duration::from_millis(25);
 /// Floor daemon - File organizer and cleaner.
 /// Modify its args in '~/.config/systemd/user/floor-daemon.service' and reload.
 #[derive(Parser)]
-#[command(version, about, long_about = None)]
+#[command(version, about, long_about = None, group(
+        clap::ArgGroup::new("services")
+            .args(["organizer", "cleanup"])
+            .required(true)
+    ))]
 pub struct Args {
     /// Enables the inbox organizer function
     #[arg(long, help_heading = "Inbox organizer", default_value_t = false)]
@@ -43,16 +49,16 @@ pub struct Args {
         long,
         help_heading = "Cleanup",
         requires = "cleanup",
-        default_value_t = 31
+        default_value_t = 30
     )]
     span: u64,
 
-    /// Time in days tll a file gets permanently DELETED from the SoonDeleted folder
+    /// Time in days until a file gets permanently DELETED from the SoonDeleted folder (currently not working)
     #[arg(
         long,
         help_heading = "Cleanup",
         requires = "cleanup",
-        default_value_t = 15
+        default_value_t = 7
     )]
     grace: u64,
 
@@ -87,14 +93,12 @@ fn run_organizer(cli_args: &Args) {
         }
     }
     saving_service(&inbox_path, &delay);
+    println!("Organization done!")
 }
 
-fn run_cleanup(cli_args: Args) {
+fn run_cleanup(cli_args: &Args) {
     let mut paths = cli_args.paths.clone();
     if paths.is_empty() {
-        if let Some(got) = document_dir() {
-            paths.push(got);
-        };
         if let Some(got) = document_dir() {
             paths.push(got);
         };
@@ -114,12 +118,34 @@ fn run_cleanup(cli_args: Args) {
     }
     let span = Duration::from_hours(24 * cli_args.span);
     let grace = Duration::from_hours(24 * cli_args.grace);
-    cleanup_service(paths, &span, &grace);
+    if cli_args.daemon {
+        loop {
+            cleanup_service(&paths, &span, &grace);
+            sleep(LOOP_INTERVAL);
+        }
+    }
+    cleanup_service(&paths, &span, &grace);
+    println!("Cleanup done!")
 }
 
 fn main() {
-    let cli_args = Args::parse();
+    let cli_args = Arc::new(Args::parse());
 
-    run_organizer(&cli_args);
-    run_cleanup(cli_args);
+    let organizer_args = Arc::clone(&cli_args);
+    let cleanup_args = Arc::clone(&cli_args);
+
+    let organizer = thread::spawn(move || {
+        if organizer_args.organizer {
+            run_organizer(&organizer_args);
+        }
+    });
+
+    let cleanup = thread::spawn(move || {
+        if cleanup_args.cleanup {
+            run_cleanup(&cleanup_args)
+        }
+    });
+
+    organizer.join().expect("organized crashed");
+    cleanup.join().expect("cleanup crashed");
 }
