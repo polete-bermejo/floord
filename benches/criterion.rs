@@ -61,7 +61,7 @@ fn cleanup_empty_dir(c: &mut Criterion) {
     let duration = Duration::ZERO;
     c.bench_function("cleanup empty dir", |b| {
         b.iter(|| {
-            cleanup_service(&vec![path], &duration, &duration);
+            cleanup_service(&vec![path], &duration, &duration, false);
         })
     });
 }
@@ -76,7 +76,7 @@ fn cleanup_10k_dir_not_moving(c: &mut Criterion) {
     }
     c.bench_function("cleanup empty dir", |b| {
         b.iter(|| {
-            cleanup_service(&vec![path], &duration, &duration);
+            cleanup_service(&vec![path], &duration, &duration, false);
         })
     });
 }

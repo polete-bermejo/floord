@@ -1,6 +1,7 @@
 use dirs::{audio_dir, document_dir, picture_dir, video_dir};
 use floord::{SOON_DELETED, UNKNOWN, cleanup_service, saving_service};
 use std::fs::{File, create_dir, create_dir_all, read_dir, remove_file};
+use std::thread::sleep;
 use std::time::Duration;
 use tempfile::{tempdir, tempdir_in};
 
@@ -125,7 +126,7 @@ fn shorts_directories_to_one() {
     let read_dir = read_dir(path).unwrap();
     let size = read_dir.count();
 
-    cleanup_service(&vec![path], &span, &Duration::new(10, 0));
+    cleanup_service(&vec![path], &span, &Duration::new(10, 0), false);
 
     let read_dir = std::fs::read_dir(path).unwrap();
     let size2 = read_dir.count();
@@ -142,7 +143,7 @@ fn move_directory_to_soon_deleted() {
     let path = tmp.path();
     create_dir(path.join(TEST_FILE)).unwrap();
 
-    cleanup_service(&vec![path], &span, &Duration::new(10, 0));
+    cleanup_service(&vec![path], &span, &Duration::new(10, 0), false);
     assert!(path.join(SOON_DELETED).exists());
 
     let read_dir = read_dir(path.join(SOON_DELETED)).unwrap();
@@ -160,7 +161,7 @@ fn dont_move_directory_to_soon_deleted() {
     let path = tmp.path();
     create_dir(path.join(TEST_FILE)).unwrap();
 
-    cleanup_service(&vec![path], &span, &Duration::new(10, 0));
+    cleanup_service(&vec![path], &span, &Duration::new(10, 0), false);
     assert!(!path.join(SOON_DELETED).exists()); // Shouldn't exist
     assert!(!path.join(SOON_DELETED).join(TEST_FILE).exists());
 
@@ -202,17 +203,142 @@ fn correct_renaming_cleanup() {
     create_dir_all(path.join(TEST_FILE)).unwrap();
 
     let duration = Duration::ZERO;
-    cleanup_service(&vec![path], &duration, &duration); // File 0
+    cleanup_service(&vec![path], &duration, &duration, false); // File 0
 
     create_dir_all(path.join(TEST_FILE)).unwrap();
-    cleanup_service(&vec![path], &duration, &duration); // File 1
+    cleanup_service(&vec![path], &duration, &duration, false); // File 1
 
     create_dir_all(path.join(TEST_FILE)).unwrap();
-    cleanup_service(&vec![path], &duration, &duration); // File 2
+    cleanup_service(&vec![path], &duration, &duration, false); // File 2
 
     assert!(soon_deleted.join(TEST_FILE).exists());
     let second_file = TEST_FILE.to_owned() + "(1)";
     assert!(soon_deleted.join(second_file).exists());
     let third_file = TEST_FILE.to_owned() + "(2)";
     assert!(soon_deleted.join(third_file).exists())
+}
+// ------------------------------------------------------------------------------------------------
+// Deleting cleanup tests
+// ------------------------------------------------------------------------------------------------
+#[test]
+fn dont_delete_by_both_times() {
+    let path = tempdir_in(".").unwrap();
+    let path = path.path();
+    let probe = path.join(SOON_DELETED).join(TEST_FILE);
+    create_dir_all(&probe).unwrap();
+
+    assert!(probe.exists());
+
+    cleanup_service(
+        &vec![path],
+        &Duration::new(5, 0),
+        &Duration::new(5, 0),
+        true,
+    );
+
+    assert!(probe.exists());
+}
+
+#[test]
+fn delete_by_both_times_zero() {
+    let path = tempdir_in(".").unwrap();
+    let path = path.path();
+    let probe = path.join(SOON_DELETED).join(TEST_FILE);
+    create_dir_all(&probe).unwrap();
+
+    assert!(probe.exists());
+
+    cleanup_service(&vec![path], &Duration::ZERO, &Duration::ZERO, true);
+
+    assert!(!probe.exists());
+    assert!(probe.parent().unwrap().exists());
+}
+
+#[test]
+fn delete_by_grace_time_zero() {
+    let path = tempdir_in(".").unwrap();
+    let path = path.path();
+    let probe = path.join(SOON_DELETED).join(TEST_FILE);
+    create_dir_all(&probe).unwrap();
+
+    assert!(probe.exists());
+
+    cleanup_service(
+        &vec![path],
+        &Duration::from_millis(1),
+        &Duration::ZERO,
+        true,
+    );
+
+    assert!(probe.exists());
+
+    sleep(Duration::from_millis(2));
+    cleanup_service(
+        &vec![path],
+        &Duration::from_millis(1),
+        &Duration::ZERO,
+        true,
+    );
+
+    assert!(!probe.exists());
+    assert!(probe.parent().unwrap().exists());
+}
+
+#[test]
+fn delete_by_span_time_zero() {
+    let path = tempdir_in(".").unwrap();
+    let path = path.path();
+    let probe = path.join(SOON_DELETED).join(TEST_FILE);
+    create_dir_all(&probe).unwrap();
+
+    assert!(probe.exists());
+
+    cleanup_service(
+        &vec![path],
+        &Duration::ZERO,
+        &Duration::from_millis(1),
+        true,
+    );
+
+    assert!(probe.exists());
+
+    sleep(Duration::from_millis(2));
+    cleanup_service(
+        &vec![path],
+        &Duration::ZERO,
+        &Duration::from_millis(1),
+        true,
+    );
+
+    assert!(!probe.exists());
+    assert!(probe.parent().unwrap().exists());
+}
+
+#[test]
+fn delete_by_summatory_times() {
+    let path = tempdir_in(".").unwrap();
+    let path = path.path();
+    let probe = path.join(SOON_DELETED).join(TEST_FILE);
+    create_dir_all(&probe).unwrap();
+
+    assert!(probe.exists());
+
+    cleanup_service(
+        &vec![path],
+        &Duration::from_millis(1),
+        &Duration::from_millis(1),
+        true,
+    );
+    assert!(probe.exists()); // May exist due to not wait
+
+    sleep(Duration::from_millis(3));
+    cleanup_service(
+        &vec![path],
+        &Duration::from_millis(1),
+        &Duration::from_millis(1),
+        true,
+    );
+
+    assert!(!probe.exists()); // May NOT exist due to the wait
+    assert!(probe.parent().unwrap().exists());
 }

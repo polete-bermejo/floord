@@ -1,10 +1,18 @@
 use crate::SOON_DELETED;
-use crate::cleanups::cleanup_phase;
+use crate::cleanups::{cleanup_phase, deletion_phase};
 use std::fs::DirEntry;
+use std::ops::Add;
 use std::path::Path;
 use std::time::Duration;
 
-pub fn service(paths: &Vec<&Path>, duration_old: &Duration, _duration_grace: &Duration) {
+pub fn service(
+    paths: &Vec<&Path>,
+    duration_old: &Duration,
+    duration_grace: &Duration,
+    allow_deletion: bool,
+) {
+    let limit = duration_old.add(*duration_grace);
+
     for folder in paths {
         if let Ok(entries) = folder.read_dir() {
             for entry in entries {
@@ -13,6 +21,9 @@ pub fn service(paths: &Vec<&Path>, duration_old: &Duration, _duration_grace: &Du
                 };
                 manage_entry(&entry, duration_old);
             }
+        }
+        if allow_deletion {
+            deletion_phase(folder, &limit);
         }
     }
 }
@@ -23,5 +34,5 @@ fn manage_entry(dir_entry: &DirEntry, duration_old: &Duration) {
         return;
     }
 
-    cleanup_phase(duration_old, &path, SOON_DELETED);
+    cleanup_phase(duration_old, &path);
 }

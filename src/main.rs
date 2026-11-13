@@ -19,6 +19,7 @@ const C_LOOP_INTERVAL: Duration = Duration::from_mins(5);
             .required(true)
             .multiple(true)
     ))]
+#[allow(clippy::struct_excessive_bools)]
 pub struct Args {
     /// Enables the inbox organizer function
     #[arg(long, help_heading = "Inbox organizer", default_value_t = false)]
@@ -46,7 +47,7 @@ pub struct Args {
     #[arg(long, help_heading = "Cleanup", requires = "cleanup")]
     paths: Vec<PathBuf>,
 
-    /// Time in days till a file goes to the `SoonDeleted` folder
+    /// Time in days until a file goes to the `SoonDeleted` folder
     #[arg(
         long,
         help_heading = "Cleanup",
@@ -63,6 +64,15 @@ pub struct Args {
         default_value_t = 7
     )]
     grace: u64,
+
+    /// Allow daemon to execute deletion actions over the `SoonDeleted` folders according to the grace and span times
+    #[arg(
+        long,
+        help_heading = "Cleanup",
+        requires = "cleanup",
+        default_value_t = false
+    )]
+    allow_deletion: bool,
 
     /// Executes in loop/daemon-mode.
     /// Needed for the execution as a service
@@ -123,11 +133,11 @@ fn run_cleanup(cli_args: &Args) {
     let grace = Duration::from_hours(24 * cli_args.grace);
     if cli_args.daemon {
         loop {
-            cleanup_service(&paths, &span, &grace);
+            cleanup_service(&paths, &span, &grace, cli_args.allow_deletion);
             sleep(C_LOOP_INTERVAL);
         }
     }
-    cleanup_service(&paths, &span, &grace);
+    cleanup_service(&paths, &span, &grace, cli_args.allow_deletion);
     println!("Cleanup done!");
 }
 

@@ -20,7 +20,7 @@ echo "
 [Unit]
 Description=Floor daemon File organizer
 [Service]
-ExecStart=$BINARY_PATH --daemon --organizer --cleanup
+ExecStart=$BINARY_PATH --daemon --organizer --cleanup --allow-deletion
 Restart=on-failure
 [Install]
 WantedBy=default.target
@@ -31,5 +31,6 @@ echo "Initializing systemd service..."
 mkdir -p "$SERVICE_PATH"
 systemctl --user daemon-reload
 systemctl --user enable --now floor-daemon
+systemctl --user restart --now floor-daemon
 
 echo "Floord installed and initialized successfully!"
