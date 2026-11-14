@@ -39,3 +39,6 @@ I'm building Floord while learning Rust, so there's plenty of room for improveme
 Whether it's a tiny bug fix, a big feature, a suggestion or just some feedback, all contributions are appreciated.
 
 **Don't be afraid to open an issue or send a PR. Thanks for helping make Floord better!**
+
+## Notes
+- cargo test may fail intermittently on Windows machines due to inconsistencies in sleep timing.
