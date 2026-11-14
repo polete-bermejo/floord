@@ -15,11 +15,18 @@ It uses the operating system's standard directories whenever available:
 **Unknown files**: If a file has an unsupported or unrecognized extension, Floord automatically creates an Unknown folder inside the designated organization directory (if it doesn't already exist) and moves the file there.
 
 ## Installation
+
+### Linux
 Execute:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/polete-bermejo/floord/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/polete-bermejo/floord/main/installers/install.sh | sh
 ```
 
+### Windows
+Execute:
+```powershell
+irm https://raw.githubusercontent.com/polete-bermejo/floord/main/installers/install.ps1 | iex
+```
 ## Service Guide
 To see the available commands and options, run:
 ```bash
