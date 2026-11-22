@@ -1,4 +1,5 @@
 use crate::UNKNOWN;
+use crate::services::reports::{Outcome, Report};
 use crate::services::savings::save;
 use anyhow::Result;
 use std::fs::{DirEntry, remove_dir};
@@ -6,17 +7,19 @@ use std::path::Path;
 use std::time::{Duration, SystemTime};
 
 /// Initialize the service
-pub fn service(inbox_dir: &Path, seconds: &Duration, notify: bool) {
-    let Ok(read_dir) = inbox_dir.read_dir() else {
-        return;
-    };
+pub fn service(inbox_dir: &Path, seconds: &Duration, notify: bool, report: &mut Report) -> Result<()> {
+    let read_dir = inbox_dir.read_dir()?;
 
     for entry in read_dir {
         let Ok(dir_entry) = entry else { continue };
-        let _ = manage_entry(&dir_entry, inbox_dir, seconds, notify);
+        match manage_entry(&dir_entry, inbox_dir, seconds, notify) {
+            Ok(a) => report.record(a),
+            Err(e) => report.fail(dir_entry.path(), e),
+        }
     }
 
     remove_empty_unknown(inbox_dir);
+    Ok(())
 }
 
 /// Removes the Unknown folder if it is empty.
@@ -33,7 +36,7 @@ fn manage_entry(
     inbox_dir: &Path,
     delay_in_seconds: &Duration,
     notify: bool,
-) -> Result<()> {
+) -> Result<Outcome> {
     let metadata = dir_entry.metadata()?;
     let current_time = SystemTime::now();
 
@@ -44,9 +47,13 @@ fn manage_entry(
         .and_then(|t| current_time.duration_since(t).ok())
         .is_some_and(|d| d < *delay_in_seconds)
     {
-        return Ok(());
+        return Ok(Outcome::Skipped);
     }
 
-    save(dir_entry, inbox_dir, notify);
-    Ok(())
+    if dir_entry.path() == inbox_dir.join(UNKNOWN) {
+        return Ok(Outcome::Skipped);
+    }
+
+    save(dir_entry, inbox_dir, notify)?;
+    Ok(Outcome::Saved)
 }

@@ -17,7 +17,7 @@ fn dont_move_by_duration() {
     let secs = Duration::new(300, 0);
     let probe = &tmp.path().join(TEST_FILE);
     create_dir(probe).unwrap();
-    saving_service(tmp.path(), &secs, false);
+    saving_service(tmp.path(), &secs, false).unwrap();
     assert!(probe.exists())
 }
 
@@ -29,7 +29,7 @@ fn move_by_duration() {
     let secs = Duration::ZERO;
     let probe = tmp.join(TEST_FILE);
     create_dir(&probe).unwrap();
-    saving_service(tmp, &secs, false);
+    saving_service(tmp, &secs, false).unwrap();
     assert!(!probe.exists())
 }
 
@@ -40,7 +40,7 @@ fn move_to_unknown() {
     let secs = Duration::ZERO;
     let probe = tmp.join(TEST_FILE);
     create_dir(&probe).unwrap();
-    saving_service(tmp, &secs, false);
+    saving_service(tmp, &secs, false).unwrap();
     assert!(!probe.exists());
 
     assert!(tmp.join(UNKNOWN).exists());
@@ -57,7 +57,7 @@ fn move_to_unknown_uppercase_extension() {
 
     File::create_new(&probe).unwrap();
 
-    saving_service(tmp.path(), &secs, false);
+    saving_service(tmp.path(), &secs, false).unwrap();
     let destination = tmp.path().join(UNKNOWN).join(&test_file);
 
     assert!(!probe.exists());
@@ -72,7 +72,7 @@ fn move_to_unknown_by_duration() {
     let probe = tmp.join(TEST_FILE);
     create_dir(&probe).unwrap();
     sleep(Duration::new(1, 0));
-    saving_service(tmp, &secs, false);
+    saving_service(tmp, &secs, false).unwrap();
     assert!(!probe.exists());
 
     assert!(tmp.join(UNKNOWN).exists());
@@ -83,7 +83,7 @@ fn move_to_unknown_by_duration() {
 fn no_unknown_folder_when_nothing_to_move() {
     let tmp = tempdir().unwrap();
     let tmp = tmp.path();
-    saving_service(tmp, &Duration::ZERO, false);
+    saving_service(tmp, &Duration::ZERO, false).unwrap();
     assert!(!tmp.join(UNKNOWN).exists())
 }
 
@@ -92,7 +92,7 @@ fn no_unknown_folder_when_files_are_too_recent() {
     let tmp = tempdir().unwrap();
     let tmp = tmp.path();
     create_dir(tmp.join(TEST_FILE)).unwrap();
-    saving_service(tmp, &Duration::new(300, 0), false);
+    saving_service(tmp, &Duration::new(300, 0), false).unwrap();
     assert!(!tmp.join(UNKNOWN).exists())
 }
 
@@ -101,7 +101,7 @@ fn remove_empty_unknown_folder() {
     let tmp = tempdir().unwrap();
     let tmp = tmp.path();
     create_dir(tmp.join(UNKNOWN)).unwrap();
-    saving_service(tmp, &Duration::ZERO, false);
+    saving_service(tmp, &Duration::ZERO, false).unwrap();
     assert!(!tmp.join(UNKNOWN).exists())
 }
 
@@ -111,13 +111,13 @@ fn remove_unknown_folder_once_emptied() {
     let tmp = tmp.path();
     let probe = tmp.join(TEST_FILE);
     create_dir(&probe).unwrap();
-    saving_service(tmp, &Duration::ZERO, false);
+    saving_service(tmp, &Duration::ZERO, false).unwrap();
     let moved = tmp.join(UNKNOWN).join(TEST_FILE);
     assert!(moved.exists());
 
     // The user empties Unknown, the next run drops the empty folder
     remove_dir(&moved).unwrap();
-    saving_service(tmp, &Duration::ZERO, false);
+    saving_service(tmp, &Duration::ZERO, false).unwrap();
     assert!(!tmp.join(UNKNOWN).exists())
 }
 
@@ -126,7 +126,7 @@ fn keep_unknown_folder_with_files() {
     let tmp = tempdir().unwrap();
     let tmp = tmp.path();
     create_dir_all(tmp.join(UNKNOWN).join(TEST_FILE)).unwrap();
-    saving_service(tmp, &Duration::ZERO, false);
+    saving_service(tmp, &Duration::ZERO, false).unwrap();
     assert!(tmp.join(UNKNOWN).join(TEST_FILE).exists())
 }
 
@@ -141,7 +141,7 @@ fn move_to_documents() {
 
     File::create_new(&probe).unwrap();
 
-    saving_service(tmp.path(), &secs, false);
+    saving_service(tmp.path(), &secs, false).unwrap();
     let destination = document_dir().unwrap().join(&test_file);
 
     assert!(!probe.exists());
@@ -159,7 +159,7 @@ fn move_to_documents_uppercase_extension() {
 
     File::create_new(&probe).unwrap();
 
-    saving_service(tmp.path(), &secs, false);
+    saving_service(tmp.path(), &secs, false).unwrap();
     let destination = document_dir().unwrap().join(&test_file);
 
     assert!(!probe.exists());
@@ -177,7 +177,7 @@ fn move_to_pictures() {
 
     File::create_new(&probe).unwrap();
 
-    saving_service(tmp.path(), &secs, false);
+    saving_service(tmp.path(), &secs, false).unwrap();
     let destination = picture_dir().unwrap().join(&test_file);
 
     assert!(!probe.exists());
@@ -195,7 +195,7 @@ fn move_to_pictures_uppercase_extension() {
 
     File::create_new(&probe).unwrap();
 
-    saving_service(tmp.path(), &secs, false);
+    saving_service(tmp.path(), &secs, false).unwrap();
     let destination = picture_dir().unwrap().join(&test_file);
 
     assert!(!probe.exists());
@@ -213,7 +213,7 @@ fn move_to_audio() {
 
     File::create_new(&probe).unwrap();
 
-    saving_service(tmp.path(), &secs, false);
+    saving_service(tmp.path(), &secs, false).unwrap();
     let destination = audio_dir().unwrap().join(&test_file);
 
     assert!(!probe.exists());
@@ -231,7 +231,7 @@ fn move_to_audio_uppercase_extension() {
 
     File::create_new(&probe).unwrap();
 
-    saving_service(tmp.path(), &secs, false);
+    saving_service(tmp.path(), &secs, false).unwrap();
     let destination = audio_dir().unwrap().join(&test_file);
 
     assert!(!probe.exists());
@@ -249,7 +249,7 @@ fn move_to_video() {
 
     File::create_new(&probe).unwrap();
 
-    saving_service(tmp.path(), &secs, false);
+    saving_service(tmp.path(), &secs, false).unwrap();
     let destination = video_dir().unwrap().join(&test_file);
 
     assert!(!probe.exists());
@@ -267,7 +267,7 @@ fn move_to_video_uppercase_extension() {
 
     File::create_new(&probe).unwrap();
 
-    saving_service(tmp.path(), &secs, false);
+    saving_service(tmp.path(), &secs, false).unwrap();
     let destination = video_dir().unwrap().join(&test_file);
 
     assert!(!probe.exists());
@@ -286,13 +286,13 @@ fn correct_renaming_savings() {
     create_dir_all(path.join(TEST_FILE)).unwrap();
 
     let duration = Duration::ZERO;
-    saving_service(path, &duration, false); // File 0
+    saving_service(path, &duration, false).unwrap(); // File 0
 
     create_dir_all(path.join(TEST_FILE)).unwrap();
-    saving_service(path, &duration, false); // File with (1)
+    saving_service(path, &duration, false).unwrap(); // File with (1)
 
     create_dir_all(path.join(TEST_FILE)).unwrap();
-    saving_service(path, &duration, false); // File with (2)
+    saving_service(path, &duration, false).unwrap(); // File with (2)
 
     assert!(unknown_path.join(TEST_FILE).exists());
     let second_file = TEST_FILE.to_owned() + "(1)";
