@@ -28,7 +28,7 @@ pub fn service(
         }
 
         if allow_deletion {
-            deletion_phase(folder, &limit);
+            deletion_phase(folder, &limit, report)?;
         }
         remove_empty_soon_deleted(folder);
     }
