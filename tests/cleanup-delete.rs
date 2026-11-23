@@ -22,7 +22,8 @@ fn dont_delete_by_both_times() {
         &Duration::new(5, 0),
         true,
         false,
-    );
+    )
+    .unwrap();
 
     assert!(probe.exists());
 }
@@ -34,7 +35,7 @@ fn delete_by_both_times_zero() {
     let probe = path.join(SOON_DELETED).join(TEST_FILE);
     create_dir_all(&probe).unwrap();
 
-    cleanup_service(&vec![path], &Duration::ZERO, &Duration::ZERO, true, false);
+    cleanup_service(&vec![path], &Duration::ZERO, &Duration::ZERO, true, false).unwrap();
 
     assert!(!probe.exists());
     assert!(!probe.parent().unwrap().exists()); // Empty SoonDeleted is removed
@@ -53,7 +54,8 @@ fn delete_by_grace_time_zero() {
         &Duration::ZERO,
         true,
         false,
-    );
+    )
+    .unwrap();
 
     assert!(probe.exists());
 
@@ -64,7 +66,8 @@ fn delete_by_grace_time_zero() {
         &Duration::ZERO,
         true,
         false,
-    );
+    )
+    .unwrap();
 
     assert!(!probe.exists());
     assert!(!probe.parent().unwrap().exists()); // Empty SoonDeleted is removed
@@ -83,7 +86,8 @@ fn delete_by_span_time_zero() {
         &Duration::from_millis(50),
         true,
         false,
-    );
+    )
+    .unwrap();
 
     assert!(probe.exists());
 
@@ -94,7 +98,8 @@ fn delete_by_span_time_zero() {
         &Duration::from_millis(50),
         true,
         false,
-    );
+    )
+    .unwrap();
 
     assert!(!probe.exists());
     assert!(!probe.parent().unwrap().exists()); // Empty SoonDeleted is removed
@@ -113,7 +118,8 @@ fn delete_by_summatory_times() {
         &Duration::from_millis(50),
         true,
         false,
-    );
+    )
+    .unwrap();
     assert!(probe.exists()); // May exist due to not wait
 
     sleep(Duration::from_millis(1000));
@@ -123,7 +129,8 @@ fn delete_by_summatory_times() {
         &Duration::from_millis(50),
         true,
         false,
-    );
+    )
+    .unwrap();
 
     assert!(!probe.exists()); // May NOT exist due to the wait
     assert!(!probe.parent().unwrap().exists()); // Empty SoonDeleted is removed
@@ -141,7 +148,7 @@ fn dont_delete_secure_nor_soon_deleted_folders() {
     assert!(secure.exists());
     assert!(soon_deleted.exists());
 
-    cleanup_service(&vec![path], &Duration::ZERO, &Duration::ZERO, true, false);
+    cleanup_service(&vec![path], &Duration::ZERO, &Duration::ZERO, true, false).unwrap();
 
     assert!(secure.exists());
     assert!(!soon_deleted.join(TEST_FILE).exists());
@@ -155,7 +162,7 @@ fn remove_empty_soon_deleted_folder() {
     create_dir_all(&soon_deleted).unwrap();
 
     // Also when deletion is not allowed
-    cleanup_service(&vec![path], &Duration::ZERO, &Duration::ZERO, false, false);
+    cleanup_service(&vec![path], &Duration::ZERO, &Duration::ZERO, false, false).unwrap();
 
     assert!(!soon_deleted.exists());
 }
@@ -165,7 +172,7 @@ fn no_soon_deleted_folder_when_nothing_to_clean() {
     let path = tempdir_in(".").unwrap();
     let path = path.path();
 
-    cleanup_service(&vec![path], &Duration::ZERO, &Duration::ZERO, true, false);
+    cleanup_service(&vec![path], &Duration::ZERO, &Duration::ZERO, true, false).unwrap();
 
     assert!(!path.join(SOON_DELETED).exists());
 }
@@ -183,7 +190,8 @@ fn keep_soon_deleted_folder_with_files() {
         &Duration::new(300, 0),
         true,
         false,
-    );
+    )
+    .unwrap();
 
     assert!(probe.exists());
 }

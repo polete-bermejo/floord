@@ -50,7 +50,7 @@ fn floord_500_move_dirs_benchmark(c: &mut Criterion) {
                 tmp.to_path_buf()
             },
             |path| {
-                saving_service(&path, &secs, false);
+                saving_service(&path, &secs, false).unwrap();
             },
             criterion::BatchSize::LargeInput,
         )
@@ -65,7 +65,7 @@ fn cleanup_empty_dir(c: &mut Criterion) {
     let duration = Duration::ZERO;
     c.bench_function("cleanup empty dir", |b| {
         b.iter(|| {
-            cleanup_service(&vec![path], &duration, &duration, false, false);
+            cleanup_service(&vec![path], &duration, &duration, false, false).unwrap();
         })
     });
 }
@@ -80,7 +80,7 @@ fn cleanup_10k_dir_not_moving(c: &mut Criterion) {
     }
     c.bench_function("cleanup 10k dir not moving", |b| {
         b.iter(|| {
-            cleanup_service(&vec![path], &duration, &duration, false, false);
+            cleanup_service(&vec![path], &duration, &duration, false, false).unwrap();
         })
     });
 }

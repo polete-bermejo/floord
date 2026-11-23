@@ -1,9 +1,10 @@
+use anyhow::Result;
+use notify_rust::Notification;
 use std::{
     fs::rename,
+    io,
     path::{Path, PathBuf},
 };
-
-use notify_rust::Notification;
 
 pub enum Action {
     Save,
@@ -43,9 +44,20 @@ pub fn rename_destination(old_path: PathBuf) -> PathBuf {
     }
 }
 
-pub fn rename_and_notify(file_path: &Path, new_path: &Path, notify: bool, action: &Action) {
-    if rename(file_path, new_path).is_ok() && notify {
-        let file_name = file_path.file_name().unwrap_or_default();
+pub fn rename_and_notify(
+    file_path: &Path,
+    new_path: &Path,
+    notify: bool,
+    action: &Action,
+) -> Result<()> {
+    rename(file_path, new_path)?;
+    if notify {
+        let file_name = file_path.file_name().ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::InvalidFilename,
+                format!("reading file_name {}", file_path.display()),
+            )
+        })?;
         let mut pretty_path = new_path
             .parent()
             .and_then(Path::file_name)
@@ -70,4 +82,5 @@ pub fn rename_and_notify(file_path: &Path, new_path: &Path, notify: bool, action
             ))
             .show();
     }
+    Ok(())
 }

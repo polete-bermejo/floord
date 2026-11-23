@@ -1,8 +1,10 @@
 use crate::UNKNOWN;
 use crate::services::service_utils::Action::Save;
 use crate::services::service_utils::{rename_and_notify, rename_destination};
+use anyhow::{Ok, Result};
 use dirs::{audio_dir, document_dir, picture_dir, video_dir};
 use std::fs::{DirEntry, create_dir_all};
+use std::io;
 use std::path::{Path, PathBuf};
 
 const AUDIO_EXT: &[&str] = &[
@@ -149,30 +151,23 @@ const DOCUMENT_EXT: &[&str] = &[
 ];
 
 /// Filter and saves file in the designated path
-pub fn save(file: &DirEntry, inbox: &Path, notify: bool) {
+pub fn save(file: &DirEntry, inbox: &Path, notify: bool) -> Result<()> {
     let file_path = file.path();
-    let Some(file_name) = file_path.file_name() else {
-        return;
-    };
-    let mut new_path = inbox.join(UNKNOWN).join(file_name);
+    let file_name = file_path.file_name().ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::InvalidFilename,
+            format!("reading file_name {}", file_path.display()),
+        )
+    })?;
 
-    if file_path.is_dir() && file_name == UNKNOWN {
-        return;
-    }
+    let folder = get_destination_folder(&file_path).unwrap_or_else(|| inbox.join(UNKNOWN));
+    let new_path = folder.join(file_name);
 
-    if let Some(folder) = get_destination_folder(&file_path) {
-        new_path = folder.join(file_name);
-        let new_path = rename_destination(new_path);
-        rename_and_notify(&file_path, &new_path, notify, &Save);
-        return;
-    }
-    if let Some(unknown_path) = new_path.parent()
-        && !unknown_path.exists()
-    {
-        create_dir_all(unknown_path).unwrap_or(());
-    }
+    create_dir_all(folder)?;
+
     let new_path = rename_destination(new_path);
-    rename_and_notify(&file_path, &new_path, notify, &Save);
+    rename_and_notify(&file_path, &new_path, notify, &Save)?;
+    Ok(())
 }
 
 fn get_destination_folder(file_path: &Path) -> Option<PathBuf> {

@@ -137,12 +137,38 @@ fn run_organizer(cli_args: &Args) {
 
     if cli_args.daemon {
         loop {
-            saving_service(&inbox_path, &delay, cli_args.notify);
+            match saving_service(&inbox_path, &delay, cli_args.notify) {
+                Ok(report) => {
+                    println!(
+                        "Organized: {} saved, {} skipped, {} failed",
+                        report.saved,
+                        report.skipped,
+                        report.failed.len()
+                    );
+                    for failure in &report.failed {
+                        eprintln!(
+                            "failure in: {}, error: {}",
+                            failure.path.display(),
+                            failure.error
+                        );
+                    }
+                }
+                Err(e) => eprintln!("organizer fatal error: {e}"),
+            }
             sleep(O_LOOP_INTERVAL);
         }
     }
-    saving_service(&inbox_path, &delay, cli_args.notify);
-    println!("Organization done!");
+    match saving_service(&inbox_path, &delay, cli_args.notify) {
+        Ok(report) => {
+            println!(
+                "Organized: {} saved, {} skipped, {} failed",
+                report.saved,
+                report.skipped,
+                report.failed.len()
+            );
+        }
+        Err(e) => eprintln!("Organizer returned an error: {e}"),
+    }
 }
 
 fn run_cleanup(cli_args: &Args) {
@@ -170,23 +196,52 @@ fn run_cleanup(cli_args: &Args) {
     let grace = Duration::from_hours(24 * cli_args.grace);
     if cli_args.daemon {
         loop {
-            cleanup_service(
+            match cleanup_service(
                 &paths,
                 &span,
                 &grace,
                 cli_args.allow_deletion,
                 cli_args.notify,
-            );
+            ) {
+                Ok(report) => {
+                    println!(
+                        "Cleaned: {} cleaned, {} deleted, {} skipped, {} failed",
+                        report.cleaned,
+                        report.deleted,
+                        report.skipped,
+                        report.failed.len()
+                    );
+                    for failure in &report.failed {
+                        eprintln!(
+                            "failure in: {}, error: {}",
+                            failure.path.display(),
+                            failure.error
+                        );
+                    }
+                }
+                Err(e) => eprintln!("cleanup fatal error: {e}"),
+            }
             sleep(C_LOOP_INTERVAL);
         }
     }
-    cleanup_service(
+    match cleanup_service(
         &paths,
         &span,
         &grace,
         cli_args.allow_deletion,
         cli_args.notify,
-    );
+    ) {
+        Ok(report) => {
+            println!(
+                "Cleaned: {} cleaned, {} deleted, {} skipped, {} failed",
+                report.cleaned,
+                report.deleted,
+                report.skipped,
+                report.failed.len()
+            );
+        }
+        Err(e) => eprintln!("Cleanup returned an error: {e}"),
+    }
     println!("Cleanup done!");
 }
 
