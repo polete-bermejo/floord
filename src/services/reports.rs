@@ -1,5 +1,7 @@
 use std::{collections::HashSet, hash::Hash, path::PathBuf};
 
+use thiserror::Error;
+
 #[derive(Debug, Default)]
 pub struct Report {
     pub saved: usize,
@@ -21,6 +23,18 @@ pub enum Outcome {
     Cleaned,
     Deleted,
     Skipped,
+}
+
+#[derive(Error, Debug)]
+pub enum FloordError {
+    #[error("Couldn't get file name: {0}")]
+    FileNameNotFound(PathBuf),
+
+    #[error("Couldn't get last modification time: {0}")]
+    ModificationTimeNotFound(PathBuf),
+
+    #[error("Couldn't remove: {0}")]
+    RemoveFailure(PathBuf),
 }
 
 impl PartialEq for Failure {

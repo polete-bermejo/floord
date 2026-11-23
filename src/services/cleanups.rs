@@ -1,10 +1,9 @@
-use crate::services::reports::{Outcome, Report};
+use crate::services::reports::{FloordError, Outcome, Report};
 use crate::services::service_utils::Action;
 use crate::services::service_utils::{rename_and_notify, rename_destination};
 use crate::{SECURE, SOON_DELETED};
 use anyhow::{Result, anyhow};
 use std::fs::{DirEntry, create_dir_all, remove_dir, remove_dir_all, remove_file};
-use std::io;
 use std::path::Path;
 use std::time::{Duration, SystemTime};
 
@@ -51,12 +50,9 @@ fn cleanup_entry(
     }
     create_dir_all(folder_path.join(SOON_DELETED))?;
     let soon_deleted = folder_path.join(SOON_DELETED);
-    let file_name = path.file_name().ok_or_else(|| {
-        io::Error::new(
-            io::ErrorKind::InvalidFilename,
-            format!("reading file_name {}", path.display()),
-        )
-    })?;
+    let file_name = path
+        .file_name()
+        .ok_or_else(|| anyhow!(FloordError::FileNameNotFound(path.to_path_buf())))?;
     let new_path = &rename_destination(soon_deleted.join(file_name));
     rename_and_notify(path, new_path, notify, &Action::Cleanup)?;
 
@@ -86,12 +82,9 @@ fn must_skip_by_time(path: &Path, duration_old: &Duration) -> Result<bool> {
 }
 
 fn is_non_cleanup_folders(path: &Path) -> Result<bool> {
-    let file_name = path.file_name().ok_or_else(|| {
-        io::Error::new(
-            io::ErrorKind::InvalidFilename,
-            format!("reading file_name {}", path.display()),
-        )
-    })?;
+    let file_name = path
+        .file_name()
+        .ok_or_else(|| anyhow!(FloordError::FileNameNotFound(path.to_path_buf())))?;
 
     Ok(file_name == SOON_DELETED || file_name == SECURE)
 }
@@ -133,10 +126,7 @@ fn deletion_entry(entry: &DirEntry, limit: &Duration) -> Result<Outcome> {
     let modified = metadata.modified();
 
     if modified.is_err() && accessed.is_err() {
-        return Err(anyhow::anyhow!(
-            "could not read mtime nor atime at {}",
-            entry.path().display()
-        ));
+        return Err(anyhow!(FloordError::ModificationTimeNotFound(entry.path())));
     }
 
     let now = SystemTime::now();
@@ -156,10 +146,7 @@ fn deletion_entry(entry: &DirEntry, limit: &Duration) -> Result<Outcome> {
     if remove_file(entry.path()).is_ok() || remove_dir_all(entry.path()).is_ok() {
         return Ok(Outcome::Deleted);
     }
-    Err(anyhow!(format!(
-        "coudn't remove: {}",
-        entry.path().display()
-    )))
+    Err(anyhow!(FloordError::RemoveFailure(entry.path())))
 }
 
 fn check_accessed_deletion(

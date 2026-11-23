@@ -369,6 +369,7 @@ dependencies = [
  "notify-rust",
  "serde",
  "tempfile",
+ "thiserror",
  "toml",
 ]
 

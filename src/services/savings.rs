@@ -1,10 +1,10 @@
 use crate::UNKNOWN;
+use crate::services::reports::FloordError;
 use crate::services::service_utils::Action::Save;
 use crate::services::service_utils::{rename_and_notify, rename_destination};
-use anyhow::{Ok, Result};
+use anyhow::{Ok, Result, anyhow};
 use dirs::{audio_dir, document_dir, picture_dir, video_dir};
 use std::fs::{DirEntry, create_dir_all};
-use std::io;
 use std::path::{Path, PathBuf};
 
 const AUDIO_EXT: &[&str] = &[
@@ -153,12 +153,9 @@ const DOCUMENT_EXT: &[&str] = &[
 /// Filter and saves file in the designated path
 pub fn save(file: &DirEntry, inbox: &Path, notify: bool) -> Result<()> {
     let file_path = file.path();
-    let file_name = file_path.file_name().ok_or_else(|| {
-        io::Error::new(
-            io::ErrorKind::InvalidFilename,
-            format!("reading file_name {}", file_path.display()),
-        )
-    })?;
+    let file_name = file_path
+        .file_name()
+        .ok_or_else(|| anyhow!(FloordError::FileNameNotFound(file_path.clone())))?;
 
     let folder = get_destination_folder(&file_path).unwrap_or_else(|| inbox.join(UNKNOWN));
     let new_path = folder.join(file_name);
