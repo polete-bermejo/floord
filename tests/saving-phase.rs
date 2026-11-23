@@ -1,6 +1,6 @@
 use dirs::{audio_dir, document_dir, picture_dir, video_dir};
 use floord::{UNKNOWN, saving_service};
-use std::fs::{File, create_dir, create_dir_all, remove_dir};
+use std::fs::{File, create_dir, create_dir_all, remove_dir, remove_file};
 use std::thread::sleep;
 use std::time::Duration;
 use tempfile::{tempdir, tempdir_in};
@@ -146,6 +146,7 @@ fn move_to_documents() {
 
     assert!(!probe.exists());
     assert!(destination.exists());
+    remove_file(destination).unwrap();
 }
 
 #[test]
@@ -164,6 +165,8 @@ fn move_to_documents_uppercase_extension() {
 
     assert!(!probe.exists());
     assert!(destination.exists());
+    remove_file(destination).unwrap();
+    
 }
 
 #[test]
@@ -182,6 +185,8 @@ fn move_to_pictures() {
 
     assert!(!probe.exists());
     assert!(destination.exists());
+    remove_file(destination).unwrap();
+    
 }
 
 #[test]
@@ -200,6 +205,8 @@ fn move_to_pictures_uppercase_extension() {
 
     assert!(!probe.exists());
     assert!(destination.exists());
+    remove_file(destination).unwrap();
+    
 }
 
 #[test]
@@ -218,6 +225,8 @@ fn move_to_audio() {
 
     assert!(!probe.exists());
     assert!(destination.exists());
+    remove_file(destination).unwrap();
+    
 }
 
 #[test]
@@ -236,6 +245,8 @@ fn move_to_audio_uppercase_extension() {
 
     assert!(!probe.exists());
     assert!(destination.exists());
+    remove_file(destination).unwrap();
+    
 }
 
 #[test]
@@ -254,6 +265,8 @@ fn move_to_video() {
 
     assert!(!probe.exists());
     assert!(destination.exists());
+    remove_file(destination).unwrap();
+    
 }
 
 #[test]
@@ -272,6 +285,8 @@ fn move_to_video_uppercase_extension() {
 
     assert!(!probe.exists());
     assert!(destination.exists());
+    remove_file(destination).unwrap();
+    
 }
 
 //-------------------------------------------------------------------------------------------------
