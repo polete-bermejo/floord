@@ -166,7 +166,6 @@ fn move_to_documents_uppercase_extension() {
     assert!(!probe.exists());
     assert!(destination.exists());
     remove_file(destination).unwrap();
-    
 }
 
 #[test]
@@ -186,7 +185,6 @@ fn move_to_pictures() {
     assert!(!probe.exists());
     assert!(destination.exists());
     remove_file(destination).unwrap();
-    
 }
 
 #[test]
@@ -206,7 +204,6 @@ fn move_to_pictures_uppercase_extension() {
     assert!(!probe.exists());
     assert!(destination.exists());
     remove_file(destination).unwrap();
-    
 }
 
 #[test]
@@ -226,7 +223,6 @@ fn move_to_audio() {
     assert!(!probe.exists());
     assert!(destination.exists());
     remove_file(destination).unwrap();
-    
 }
 
 #[test]
@@ -246,7 +242,6 @@ fn move_to_audio_uppercase_extension() {
     assert!(!probe.exists());
     assert!(destination.exists());
     remove_file(destination).unwrap();
-    
 }
 
 #[test]
@@ -266,7 +261,6 @@ fn move_to_video() {
     assert!(!probe.exists());
     assert!(destination.exists());
     remove_file(destination).unwrap();
-    
 }
 
 #[test]
@@ -286,7 +280,6 @@ fn move_to_video_uppercase_extension() {
     assert!(!probe.exists());
     assert!(destination.exists());
     remove_file(destination).unwrap();
-    
 }
 
 //-------------------------------------------------------------------------------------------------
