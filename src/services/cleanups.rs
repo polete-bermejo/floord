@@ -93,11 +93,7 @@ fn is_non_cleanup_folders(path: &Path) -> Result<bool> {
         )
     })?;
 
-    if file_name == SOON_DELETED || file_name == SECURE {
-        return Ok(true);
-    }
-
-    Ok(false)
+    Ok(file_name == SOON_DELETED || file_name == SECURE)
 }
 
 pub fn deletion_phase(folder_path: &Path, limit: &Duration, report: &mut Report) -> Result<()> {
