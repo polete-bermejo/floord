@@ -160,12 +160,11 @@ pub fn save(file: &DirEntry, inbox: &Path, notify: bool) -> Result<()> {
         )
     })?;
 
-
     let folder = get_destination_folder(&file_path).unwrap_or_else(|| inbox.join(UNKNOWN));
     let new_path = folder.join(file_name);
 
     create_dir_all(folder)?;
-    
+
     let new_path = rename_destination(new_path);
     rename_and_notify(&file_path, &new_path, notify, &Save)?;
     Ok(())

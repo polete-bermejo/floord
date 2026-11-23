@@ -15,6 +15,7 @@ pub struct Failure {
     pub error: anyhow::Error,
 }
 
+#[derive(Clone, Copy)]
 pub enum Outcome {
     Saved,
     Cleaned,
@@ -48,13 +49,13 @@ impl Report {
         self.failed.insert(Failure { path, error });
     }
 
-    pub(crate) fn add(&mut self, report: Report) {
-        self.saved += report.saved;
-        self.cleaned += report.cleaned;
-        self.deleted += report.deleted;
-        self.skipped += report.skipped;
-        for fail in report.failed {
-            self.failed.insert(fail);
-        }
-    }
+    //pub(crate) fn add(&mut self, report: Report) {
+    //    self.saved += report.saved;
+    //    self.cleaned += report.cleaned;
+    //    self.deleted += report.deleted;
+    //    self.skipped += report.skipped;
+    //    for fail in report.failed {
+    //        self.failed.insert(fail);
+    //    }
+    //}
 }

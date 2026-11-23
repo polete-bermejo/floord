@@ -1,25 +1,77 @@
-use crate::SOON_DELETED;
 use crate::services::reports::{Outcome, Report};
-use crate::services::service_utils::Action::Cleanup;
+use crate::services::service_utils::Action;
 use crate::services::service_utils::{rename_and_notify, rename_destination};
+use crate::{SECURE, SOON_DELETED};
 use anyhow::{Result, anyhow};
 use std::fs::{DirEntry, create_dir_all, remove_dir, remove_dir_all, remove_file};
 use std::io;
 use std::path::Path;
 use std::time::{Duration, SystemTime};
 
-pub fn cleanup_phase(duration_old: &Duration, path: &Path, notify: bool) {
-    let Ok(metadata) = path.metadata() else {
-        // Future report error
-        return;
-    };
+pub fn cleanup_phase(
+    folder_path: &Path,
+    duration_old: &Duration,
+    notify: bool,
+    report: &mut Report,
+) -> Result<()> {
+    for entry in folder_path.read_dir()? {
+        let Ok(entry) = entry else {
+            report.record(Outcome::Skipped);
+            continue;
+        };
+        let path = entry.path();
+        match is_non_cleanup_folders(&path) {
+            Ok(is) => {
+                if is {
+                    report.record(Outcome::Skipped);
+                    continue;
+                }
+            }
+            Err(error) => {
+                report.fail(entry.path(), error);
+            }
+        }
+        match cleanup_entry(folder_path, &path, duration_old, notify) {
+            Ok(outcome) => report.record(outcome),
+            Err(error) => report.fail(entry.path(), error),
+        }
+    }
+
+    Ok(())
+}
+
+fn cleanup_entry(
+    folder_path: &Path,
+    path: &Path,
+    duration_old: &Duration,
+    notify: bool,
+) -> Result<Outcome> {
+    if must_skip_by_time(path, duration_old)? {
+        return Ok(Outcome::Skipped);
+    }
+    create_dir_all(folder_path.join(SOON_DELETED))?;
+    let soon_deleted = folder_path.join(SOON_DELETED);
+    let file_name = path.file_name().ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::InvalidFilename,
+            format!("reading file_name {}", path.display()),
+        )
+    })?;
+    let new_path = &rename_destination(soon_deleted.join(file_name));
+    rename_and_notify(path, new_path, notify, &Action::Cleanup)?;
+
+    Ok(Outcome::Cleaned)
+}
+
+fn must_skip_by_time(path: &Path, duration_old: &Duration) -> Result<bool> {
+    let metadata = path.metadata()?;
     if metadata
         .accessed()
         .ok()
         .and_then(|t| SystemTime::now().duration_since(t).ok())
         .is_some_and(|d| d < *duration_old)
     {
-        return;
+        return Ok(true);
     }
 
     if metadata
@@ -28,30 +80,28 @@ pub fn cleanup_phase(duration_old: &Duration, path: &Path, notify: bool) {
         .and_then(|t| SystemTime::now().duration_since(t).ok())
         .is_some_and(|d| d < *duration_old)
     {
-        return;
+        return Ok(true);
     }
-
-    let Some(file_name) = path.file_name() else {
-        return;
-    };
-
-    if let Some(soon_deleted) = path.parent().map(|i| i.join(SOON_DELETED)) {
-        let Ok(()) = create_dir_all(&soon_deleted) else {
-            return;
-        }; // Future report error
-
-        let Some(new_path) = path.parent() else {
-            return;
-        };
-
-        let new_path = rename_destination(new_path.join(SOON_DELETED).join(file_name));
-        rename_and_notify(path, &new_path, notify, &Cleanup);
-    }
+    Ok(false)
 }
 
-// Fix TODO
+fn is_non_cleanup_folders(path: &Path) -> Result<bool> {
+    let file_name = path.file_name().ok_or_else(|| {
+        io::Error::new(
+            io::ErrorKind::InvalidFilename,
+            format!("reading file_name {}", path.display()),
+        )
+    })?;
+
+    if file_name == SOON_DELETED || file_name == SECURE {
+        return Ok(true);
+    }
+
+    Ok(false)
+}
+
 pub fn deletion_phase(folder_path: &Path, limit: &Duration, report: &mut Report) -> Result<()> {
-    if let Some(outcome) = soon_delete_exists(folder_path) {
+    if let Some(outcome) = soon_delete_not_exists(folder_path) {
         report.record(outcome);
         return Ok(());
     }
@@ -73,7 +123,7 @@ pub fn deletion_phase(folder_path: &Path, limit: &Duration, report: &mut Report)
     Ok(())
 }
 
-fn soon_delete_exists(folder_path: &Path) -> Option<Outcome> {
+fn soon_delete_not_exists(folder_path: &Path) -> Option<Outcome> {
     if !folder_path.join(SOON_DELETED).exists() {
         return Some(Outcome::Skipped);
     }

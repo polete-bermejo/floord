@@ -10,7 +10,6 @@ mod saving_service;
 mod savings;
 mod service_utils;
 
-
 pub fn saving_service(path: &Path, duration: &Duration, notify: bool) -> Result<Report> {
     let mut report = Report::default();
     saving_service::service(path, duration, notify, &mut report)?;
@@ -25,6 +24,13 @@ pub fn cleanup_service(
     notify: bool,
 ) -> Result<Report> {
     let mut report = Report::default();
-    cleanup_service::service(paths, duration_old, duration_grace, allow_deletion, notify, &mut report)?;
+    cleanup_service::service(
+        paths,
+        duration_old,
+        duration_grace,
+        allow_deletion,
+        notify,
+        &mut report,
+    )?;
     Ok(report)
 }

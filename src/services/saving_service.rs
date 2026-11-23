@@ -7,7 +7,12 @@ use std::path::Path;
 use std::time::{Duration, SystemTime};
 
 /// Initialize the service
-pub fn service(inbox_dir: &Path, seconds: &Duration, notify: bool, report: &mut Report) -> Result<()> {
+pub fn service(
+    inbox_dir: &Path,
+    seconds: &Duration,
+    notify: bool,
+    report: &mut Report,
+) -> Result<()> {
     let read_dir = inbox_dir.read_dir()?;
 
     for entry in read_dir {

@@ -150,10 +150,10 @@ fn run_organizer(cli_args: &Args) {
                             "failure in: {}, error: {}",
                             failure.path.display(),
                             failure.error
-                        )
+                        );
                     }
                 }
-                Err(e) => eprintln!("organizer fatal error: {}", e),
+                Err(e) => eprintln!("organizer fatal error: {e}"),
             }
             sleep(O_LOOP_INTERVAL);
         }
@@ -216,10 +216,10 @@ fn run_cleanup(cli_args: &Args) {
                             "failure in: {}, error: {}",
                             failure.path.display(),
                             failure.error
-                        )
+                        );
                     }
                 }
-                Err(e) => eprintln!("cleanup fatal error: {}", e),
+                Err(e) => eprintln!("cleanup fatal error: {e}"),
             }
             sleep(C_LOOP_INTERVAL);
         }
@@ -240,7 +240,7 @@ fn run_cleanup(cli_args: &Args) {
                 report.failed.len()
             );
         }
-        Err(e) => eprintln!("Cleanup returned an error: {}", e),
+        Err(e) => eprintln!("Cleanup returned an error: {e}"),
     }
     println!("Cleanup done!");
 }
