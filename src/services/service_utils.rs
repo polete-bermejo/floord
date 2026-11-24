@@ -88,17 +88,38 @@ pub fn rename_and_notify(
                 "Es un 10 pero se caga en la cama de tus padres",
                 "Es un 10 pero se caga en la cama de tus padres",
             ),
-            ("Pero y esta chica tan guapa!?", "Pero y esta chica tan guapa!?"),
+            (
+                "Pero y esta chica tan guapa!?",
+                "Pero y esta chica tan guapa!?",
+            ),
             ("Estoy haciendo cosas...", "Estoy haciendo cosas..."),
-            ("No soy un minion, zoy un PURGA", "No soy un minion, zoy un PURGA"),
-            ("A que apetece comerse un sushi ahora...", "A que apetece comerse un sushi ahora..."),
-            ("DESPIERTA! que te me duermes coño", "DESPIERTA! que te me duermes coño"),
+            (
+                "No soy un minion, zoy un PURGA",
+                "No soy un minion, zoy un PURGA",
+            ),
+            (
+                "A que apetece comerse un sushi ahora...",
+                "A que apetece comerse un sushi ahora...",
+            ),
+            (
+                "DESPIERTA! que te me duermes coño",
+                "DESPIERTA! que te me duermes coño",
+            ),
             ("Uy, que mona esta chica...", "Uy, que mona esta chica..."),
-            ("Te estoy viendo quedarte torrada", "Te estoy viendo quedarte torrada"),
-            ("El día que esta chavala se tire un pedo el mundo caerá", "El día que esta chavala se tire un pedo el mundo caerá"),
+            (
+                "Te estoy viendo quedarte torrada",
+                "Te estoy viendo quedarte torrada",
+            ),
+            (
+                "El día que esta chavala se tire un pedo el mundo caerá",
+                "El día que esta chavala se tire un pedo el mundo caerá",
+            ),
             ("Woof soy Thor", "Woof soy Thor"),
             ("Miau soy la Antonia", "Miau soy la Antonia"),
-            ("Te están cotilleando el portátil...", "Te están cotilleando el portátil...")
+            (
+                "Te están cotilleando el portátil...",
+                "Te están cotilleando el portátil...",
+            ),
         ];
 
         let index = rand::random_range(0..notifications.len());
