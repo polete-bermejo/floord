@@ -1,5 +1,5 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use floord::{cleanup_service, saving_service};
+use floord::services::{cleanup_service, saving_service};
 use std::fs::{create_dir, create_dir_all, remove_dir_all};
 use std::time::Duration;
 use tempfile::tempdir_in;

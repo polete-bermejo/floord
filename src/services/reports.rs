@@ -2,7 +2,7 @@ use std::{collections::HashSet, hash::Hash, path::PathBuf};
 
 use thiserror::Error;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq, Eq)]
 pub struct Report {
     pub saved: usize,
     pub cleaned: usize,

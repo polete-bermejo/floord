@@ -1,5 +1,7 @@
 use dirs::{audio_dir, document_dir, picture_dir, video_dir};
-use floord::{UNKNOWN, saving_service};
+use floord::UNKNOWN;
+use floord::services::reports::Report;
+use floord::services::saving_service;
 use std::fs::{File, create_dir, create_dir_all, remove_dir, remove_file};
 use std::thread::sleep;
 use std::time::Duration;
@@ -17,8 +19,19 @@ fn dont_move_by_duration() {
     let secs = Duration::new(300, 0);
     let probe = &tmp.path().join(TEST_FILE);
     create_dir(probe).unwrap();
-    saving_service(tmp.path(), &secs, false).unwrap();
-    assert!(probe.exists())
+    let report = saving_service(tmp.path(), &secs, false).unwrap();
+    assert!(probe.exists());
+
+    assert_eq!(
+        report,
+        Report {
+            saved: Default::default(),
+            cleaned: Default::default(),
+            deleted: Default::default(),
+            skipped: 1,
+            failed: Default::default()
+        }
+    )
 }
 
 #[test]
@@ -29,8 +42,19 @@ fn move_by_duration() {
     let secs = Duration::ZERO;
     let probe = tmp.join(TEST_FILE);
     create_dir(&probe).unwrap();
-    saving_service(tmp, &secs, false).unwrap();
-    assert!(!probe.exists())
+    let report = saving_service(tmp, &secs, false).unwrap();
+    assert!(!probe.exists());
+
+    assert_eq!(
+        report,
+        Report {
+            saved: 1,
+            cleaned: Default::default(),
+            deleted: Default::default(),
+            skipped: Default::default(),
+            failed: Default::default()
+        }
+    )
 }
 
 #[test]
@@ -40,9 +64,19 @@ fn move_to_unknown() {
     let secs = Duration::ZERO;
     let probe = tmp.join(TEST_FILE);
     create_dir(&probe).unwrap();
-    saving_service(tmp, &secs, false).unwrap();
+    let report = saving_service(tmp, &secs, false).unwrap();
     assert!(!probe.exists());
 
+    assert_eq!(
+        report,
+        Report {
+            saved: 1,
+            cleaned: Default::default(),
+            deleted: Default::default(),
+            skipped: Default::default(),
+            failed: Default::default()
+        }
+    );
     assert!(tmp.join(UNKNOWN).exists());
     assert!(tmp.join(UNKNOWN).join(TEST_FILE).exists())
 }
@@ -57,9 +91,19 @@ fn move_to_unknown_uppercase_extension() {
 
     File::create_new(&probe).unwrap();
 
-    saving_service(tmp.path(), &secs, false).unwrap();
+    let report = saving_service(tmp.path(), &secs, false).unwrap();
     let destination = tmp.path().join(UNKNOWN).join(&test_file);
 
+    assert_eq!(
+        report,
+        Report {
+            saved: 1,
+            cleaned: Default::default(),
+            deleted: Default::default(),
+            skipped: Default::default(),
+            failed: Default::default()
+        }
+    );
     assert!(!probe.exists());
     assert!(destination.exists());
 }
@@ -72,9 +116,19 @@ fn move_to_unknown_by_duration() {
     let probe = tmp.join(TEST_FILE);
     create_dir(&probe).unwrap();
     sleep(Duration::new(1, 0));
-    saving_service(tmp, &secs, false).unwrap();
+    let report = saving_service(tmp, &secs, false).unwrap();
     assert!(!probe.exists());
 
+    assert_eq!(
+        report,
+        Report {
+            saved: 1,
+            cleaned: Default::default(),
+            deleted: Default::default(),
+            skipped: Default::default(),
+            failed: Default::default()
+        }
+    );
     assert!(tmp.join(UNKNOWN).exists());
     assert!(tmp.join(UNKNOWN).join(TEST_FILE).exists())
 }
@@ -126,7 +180,17 @@ fn keep_unknown_folder_with_files() {
     let tmp = tempdir().unwrap();
     let tmp = tmp.path();
     create_dir_all(tmp.join(UNKNOWN).join(TEST_FILE)).unwrap();
-    saving_service(tmp, &Duration::ZERO, false).unwrap();
+    let report = saving_service(tmp, &Duration::ZERO, false).unwrap();
+    assert_eq!(
+        report,
+        Report {
+            saved: Default::default(),
+            cleaned: Default::default(),
+            deleted: Default::default(),
+            skipped: 1,
+            failed: Default::default()
+        }
+    );
     assert!(tmp.join(UNKNOWN).join(TEST_FILE).exists())
 }
 
@@ -141,9 +205,19 @@ fn move_to_documents() {
 
     File::create_new(&probe).unwrap();
 
-    saving_service(tmp.path(), &secs, false).unwrap();
+    let report = saving_service(tmp.path(), &secs, false).unwrap();
     let destination = document_dir().unwrap().join(&test_file);
 
+    assert_eq!(
+        report,
+        Report {
+            saved: 1,
+            cleaned: Default::default(),
+            deleted: Default::default(),
+            skipped: Default::default(),
+            failed: Default::default()
+        }
+    );
     assert!(!probe.exists());
     assert!(destination.exists());
     remove_file(destination).unwrap();
@@ -160,9 +234,19 @@ fn move_to_documents_uppercase_extension() {
 
     File::create_new(&probe).unwrap();
 
-    saving_service(tmp.path(), &secs, false).unwrap();
+    let report = saving_service(tmp.path(), &secs, false).unwrap();
     let destination = document_dir().unwrap().join(&test_file);
 
+    assert_eq!(
+        report,
+        Report {
+            saved: 1,
+            cleaned: Default::default(),
+            deleted: Default::default(),
+            skipped: Default::default(),
+            failed: Default::default()
+        }
+    );
     assert!(!probe.exists());
     assert!(destination.exists());
     remove_file(destination).unwrap();
@@ -179,9 +263,19 @@ fn move_to_pictures() {
 
     File::create_new(&probe).unwrap();
 
-    saving_service(tmp.path(), &secs, false).unwrap();
+    let report = saving_service(tmp.path(), &secs, false).unwrap();
     let destination = picture_dir().unwrap().join(&test_file);
 
+    assert_eq!(
+        report,
+        Report {
+            saved: 1,
+            cleaned: Default::default(),
+            deleted: Default::default(),
+            skipped: Default::default(),
+            failed: Default::default()
+        }
+    );
     assert!(!probe.exists());
     assert!(destination.exists());
     remove_file(destination).unwrap();
@@ -198,9 +292,19 @@ fn move_to_pictures_uppercase_extension() {
 
     File::create_new(&probe).unwrap();
 
-    saving_service(tmp.path(), &secs, false).unwrap();
+    let report = saving_service(tmp.path(), &secs, false).unwrap();
     let destination = picture_dir().unwrap().join(&test_file);
 
+    assert_eq!(
+        report,
+        Report {
+            saved: 1,
+            cleaned: Default::default(),
+            deleted: Default::default(),
+            skipped: Default::default(),
+            failed: Default::default()
+        }
+    );
     assert!(!probe.exists());
     assert!(destination.exists());
     remove_file(destination).unwrap();
@@ -217,9 +321,19 @@ fn move_to_audio() {
 
     File::create_new(&probe).unwrap();
 
-    saving_service(tmp.path(), &secs, false).unwrap();
+    let report = saving_service(tmp.path(), &secs, false).unwrap();
     let destination = audio_dir().unwrap().join(&test_file);
 
+    assert_eq!(
+        report,
+        Report {
+            saved: 1,
+            cleaned: Default::default(),
+            deleted: Default::default(),
+            skipped: Default::default(),
+            failed: Default::default()
+        }
+    );
     assert!(!probe.exists());
     assert!(destination.exists());
     remove_file(destination).unwrap();
@@ -236,9 +350,19 @@ fn move_to_audio_uppercase_extension() {
 
     File::create_new(&probe).unwrap();
 
-    saving_service(tmp.path(), &secs, false).unwrap();
+    let report = saving_service(tmp.path(), &secs, false).unwrap();
     let destination = audio_dir().unwrap().join(&test_file);
 
+    assert_eq!(
+        report,
+        Report {
+            saved: 1,
+            cleaned: Default::default(),
+            deleted: Default::default(),
+            skipped: Default::default(),
+            failed: Default::default()
+        }
+    );
     assert!(!probe.exists());
     assert!(destination.exists());
     remove_file(destination).unwrap();
@@ -255,9 +379,19 @@ fn move_to_video() {
 
     File::create_new(&probe).unwrap();
 
-    saving_service(tmp.path(), &secs, false).unwrap();
+    let report = saving_service(tmp.path(), &secs, false).unwrap();
     let destination = video_dir().unwrap().join(&test_file);
 
+    assert_eq!(
+        report,
+        Report {
+            saved: 1,
+            cleaned: Default::default(),
+            deleted: Default::default(),
+            skipped: Default::default(),
+            failed: Default::default()
+        }
+    );
     assert!(!probe.exists());
     assert!(destination.exists());
     remove_file(destination).unwrap();
@@ -274,9 +408,19 @@ fn move_to_video_uppercase_extension() {
 
     File::create_new(&probe).unwrap();
 
-    saving_service(tmp.path(), &secs, false).unwrap();
+    let report = saving_service(tmp.path(), &secs, false).unwrap();
     let destination = video_dir().unwrap().join(&test_file);
 
+    assert_eq!(
+        report,
+        Report {
+            saved: 1,
+            cleaned: Default::default(),
+            deleted: Default::default(),
+            skipped: Default::default(),
+            failed: Default::default()
+        }
+    );
     assert!(!probe.exists());
     assert!(destination.exists());
     remove_file(destination).unwrap();

@@ -1,6 +1,9 @@
 use std::{fs::create_dir_all, thread::sleep, time::Duration};
 
-use floord::{SECURE, SOON_DELETED, cleanup_service};
+use floord::{
+    SECURE, SOON_DELETED,
+    services::{cleanup_service, reports::Report},
+};
 use tempfile::tempdir_in;
 
 const TEST_FILE: &str = "DELETE_PHASE";
@@ -16,7 +19,7 @@ fn dont_delete_by_both_times() {
     let probe = path.join(SOON_DELETED).join(TEST_FILE);
     create_dir_all(&probe).unwrap();
 
-    cleanup_service(
+    let report = cleanup_service(
         &vec![path],
         &Duration::new(5, 0),
         &Duration::new(5, 0),
@@ -26,6 +29,17 @@ fn dont_delete_by_both_times() {
     .unwrap();
 
     assert!(probe.exists());
+
+    assert_eq!(
+        report,
+        Report {
+            saved: Default::default(),
+            cleaned: Default::default(),
+            deleted: Default::default(),
+            skipped: 2,
+            failed: Default::default()
+        }
+    );
 }
 
 #[test]
@@ -35,10 +49,22 @@ fn delete_by_both_times_zero() {
     let probe = path.join(SOON_DELETED).join(TEST_FILE);
     create_dir_all(&probe).unwrap();
 
-    cleanup_service(&vec![path], &Duration::ZERO, &Duration::ZERO, true, false).unwrap();
+    let report =
+        cleanup_service(&vec![path], &Duration::ZERO, &Duration::ZERO, true, false).unwrap();
 
     assert!(!probe.exists());
     assert!(!probe.parent().unwrap().exists()); // Empty SoonDeleted is removed
+
+    assert_eq!(
+        report,
+        Report {
+            saved: Default::default(),
+            cleaned: Default::default(),
+            deleted: 1,
+            skipped: 1,
+            failed: Default::default()
+        }
+    );
 }
 
 #[test]
@@ -48,7 +74,7 @@ fn delete_by_grace_time_zero() {
     let probe = path.join(SOON_DELETED).join(TEST_FILE);
     create_dir_all(&probe).unwrap();
 
-    cleanup_service(
+    let report = cleanup_service(
         &vec![path],
         &Duration::from_millis(50),
         &Duration::ZERO,
@@ -57,10 +83,21 @@ fn delete_by_grace_time_zero() {
     )
     .unwrap();
 
+    assert_eq!(
+        report,
+        Report {
+            saved: Default::default(),
+            cleaned: Default::default(),
+            deleted: Default::default(),
+            skipped: 2,
+            failed: Default::default()
+        }
+    );
+
     assert!(probe.exists());
 
     sleep(Duration::from_millis(1000));
-    cleanup_service(
+    let report = cleanup_service(
         &vec![path],
         &Duration::from_millis(50),
         &Duration::ZERO,
@@ -71,6 +108,17 @@ fn delete_by_grace_time_zero() {
 
     assert!(!probe.exists());
     assert!(!probe.parent().unwrap().exists()); // Empty SoonDeleted is removed
+
+    assert_eq!(
+        report,
+        Report {
+            saved: Default::default(),
+            cleaned: Default::default(),
+            deleted: 1,
+            skipped: 1,
+            failed: Default::default()
+        }
+    );
 }
 
 #[test]
@@ -80,7 +128,7 @@ fn delete_by_span_time_zero() {
     let probe = path.join(SOON_DELETED).join(TEST_FILE);
     create_dir_all(&probe).unwrap();
 
-    cleanup_service(
+    let report = cleanup_service(
         &vec![path],
         &Duration::ZERO,
         &Duration::from_millis(50),
@@ -89,10 +137,21 @@ fn delete_by_span_time_zero() {
     )
     .unwrap();
 
+    assert_eq!(
+        report,
+        Report {
+            saved: Default::default(),
+            cleaned: Default::default(),
+            deleted: Default::default(),
+            skipped: 2,
+            failed: Default::default()
+        }
+    );
+
     assert!(probe.exists());
 
     sleep(Duration::from_millis(1000));
-    cleanup_service(
+    let report = cleanup_service(
         &vec![path],
         &Duration::ZERO,
         &Duration::from_millis(50),
@@ -103,6 +162,17 @@ fn delete_by_span_time_zero() {
 
     assert!(!probe.exists());
     assert!(!probe.parent().unwrap().exists()); // Empty SoonDeleted is removed
+
+    assert_eq!(
+        report,
+        Report {
+            saved: Default::default(),
+            cleaned: Default::default(),
+            deleted: 1,
+            skipped: 1,
+            failed: Default::default()
+        }
+    );
 }
 
 #[test]
@@ -112,7 +182,7 @@ fn delete_by_summatory_times() {
     let probe = path.join(SOON_DELETED).join(TEST_FILE);
     create_dir_all(&probe).unwrap();
 
-    cleanup_service(
+    let report = cleanup_service(
         &vec![path],
         &Duration::from_millis(50),
         &Duration::from_millis(50),
@@ -122,8 +192,19 @@ fn delete_by_summatory_times() {
     .unwrap();
     assert!(probe.exists()); // May exist due to not wait
 
+    assert_eq!(
+        report,
+        Report {
+            saved: Default::default(),
+            cleaned: Default::default(),
+            deleted: Default::default(),
+            skipped: 2,
+            failed: Default::default()
+        }
+    );
+
     sleep(Duration::from_millis(1000));
-    cleanup_service(
+    let report = cleanup_service(
         &vec![path],
         &Duration::from_millis(50),
         &Duration::from_millis(50),
@@ -134,6 +215,17 @@ fn delete_by_summatory_times() {
 
     assert!(!probe.exists()); // May NOT exist due to the wait
     assert!(!probe.parent().unwrap().exists()); // Empty SoonDeleted is removed
+
+    assert_eq!(
+        report,
+        Report {
+            saved: Default::default(),
+            cleaned: Default::default(),
+            deleted: 1,
+            skipped: 1,
+            failed: Default::default()
+        }
+    );
 }
 
 #[test]
@@ -148,7 +240,19 @@ fn dont_delete_secure_nor_soon_deleted_folders() {
     assert!(secure.exists());
     assert!(soon_deleted.exists());
 
-    cleanup_service(&vec![path], &Duration::ZERO, &Duration::ZERO, true, false).unwrap();
+    let report =
+        cleanup_service(&vec![path], &Duration::ZERO, &Duration::ZERO, true, false).unwrap();
+
+    assert_eq!(
+        report,
+        Report {
+            saved: Default::default(),
+            cleaned: Default::default(),
+            deleted: 1,
+            skipped: 2,
+            failed: Default::default()
+        }
+    );
 
     assert!(secure.exists());
     assert!(!soon_deleted.join(TEST_FILE).exists());
@@ -162,7 +266,19 @@ fn remove_empty_soon_deleted_folder() {
     create_dir_all(&soon_deleted).unwrap();
 
     // Also when deletion is not allowed
-    cleanup_service(&vec![path], &Duration::ZERO, &Duration::ZERO, false, false).unwrap();
+    let report =
+        cleanup_service(&vec![path], &Duration::ZERO, &Duration::ZERO, false, false).unwrap();
+
+    assert_eq!(
+        report,
+        Report {
+            saved: Default::default(),
+            cleaned: Default::default(),
+            deleted: Default::default(),
+            skipped: 1,
+            failed: Default::default()
+        }
+    );
 
     assert!(!soon_deleted.exists());
 }
@@ -172,8 +288,20 @@ fn no_soon_deleted_folder_when_nothing_to_clean() {
     let path = tempdir_in(".").unwrap();
     let path = path.path();
 
-    cleanup_service(&vec![path], &Duration::ZERO, &Duration::ZERO, true, false).unwrap();
+    let report =
+        cleanup_service(&vec![path], &Duration::ZERO, &Duration::ZERO, true, false).unwrap();
 
+    // Because `SoonDeleted` doesn't exist, it skips the folder
+    assert_eq!(
+        report,
+        Report {
+            saved: Default::default(),
+            cleaned: Default::default(),
+            deleted: Default::default(),
+            skipped: 1,
+            failed: Default::default()
+        }
+    );
     assert!(!path.join(SOON_DELETED).exists());
 }
 
@@ -184,7 +312,7 @@ fn keep_soon_deleted_folder_with_files() {
     let probe = path.join(SOON_DELETED).join(TEST_FILE);
     create_dir_all(&probe).unwrap();
 
-    cleanup_service(
+    let report = cleanup_service(
         &vec![path],
         &Duration::new(300, 0),
         &Duration::new(300, 0),
@@ -192,6 +320,17 @@ fn keep_soon_deleted_folder_with_files() {
         false,
     )
     .unwrap();
+
+    assert_eq!(
+        report,
+        Report {
+            saved: Default::default(),
+            cleaned: Default::default(),
+            deleted: Default::default(),
+            skipped: 2,
+            failed: Default::default()
+        }
+    );
 
     assert!(probe.exists());
 }

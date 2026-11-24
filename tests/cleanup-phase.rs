@@ -3,7 +3,10 @@ use std::{
     time::Duration,
 };
 
-use floord::{SOON_DELETED, cleanup_service};
+use floord::{
+    SOON_DELETED,
+    services::{cleanup_service, reports::Report},
+};
 use tempfile::tempdir_in;
 
 const TEST_FILE: &str = "CLEANUP_TEST";
@@ -25,13 +28,24 @@ fn shorts_directories_to_one() {
     let read_dir = read_dir(path).unwrap();
     let size = read_dir.count();
 
-    cleanup_service(&vec![path], &span, &Duration::new(10, 0), false, false).unwrap();
+    let report = cleanup_service(&vec![path], &span, &Duration::new(10, 0), false, false).unwrap();
 
     let read_dir = std::fs::read_dir(path).unwrap();
     let size2 = read_dir.count();
     assert_ne!(size, size2);
     assert_eq!(1, size2);
     assert!(path.join(SOON_DELETED).exists());
+
+    assert_eq!(
+        report,
+        Report {
+            saved: Default::default(),
+            cleaned: 2,
+            deleted: Default::default(),
+            skipped: Default::default(),
+            failed: Default::default()
+        }
+    );
 }
 
 #[test]
@@ -41,8 +55,7 @@ fn move_directory_to_soon_deleted() {
 
     let path = tmp.path();
     create_dir(path.join(TEST_FILE)).unwrap();
-
-    cleanup_service(&vec![path], &span, &Duration::new(10, 0), false, false).unwrap();
+    let report = cleanup_service(&vec![path], &span, &Duration::new(10, 0), false, false).unwrap();
     assert!(path.join(SOON_DELETED).exists());
 
     let read_dir = read_dir(path.join(SOON_DELETED)).unwrap();
@@ -50,6 +63,17 @@ fn move_directory_to_soon_deleted() {
     assert_eq!(1, size); // Assert that cleanup doesn't create duplicates
 
     assert!(path.join(SOON_DELETED).join(TEST_FILE).exists());
+
+    assert_eq!(
+        report,
+        Report {
+            saved: Default::default(),
+            cleaned: 1,
+            deleted: Default::default(),
+            skipped: Default::default(),
+            failed: Default::default()
+        }
+    );
 }
 
 #[test]
@@ -59,12 +83,22 @@ fn dont_move_directory_to_soon_deleted() {
 
     let path = tmp.path();
     create_dir(path.join(TEST_FILE)).unwrap();
-
-    cleanup_service(&vec![path], &span, &Duration::new(10, 0), false, false).unwrap();
+    let report = cleanup_service(&vec![path], &span, &Duration::new(10, 0), false, false).unwrap();
     assert!(!path.join(SOON_DELETED).exists()); // Shouldn't exist
     assert!(!path.join(SOON_DELETED).join(TEST_FILE).exists());
 
     assert!(path.join(TEST_FILE).exists());
+
+    assert_eq!(
+        report,
+        Report {
+            saved: Default::default(),
+            cleaned: Default::default(),
+            deleted: Default::default(),
+            skipped: 1,
+            failed: Default::default()
+        }
+    );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -79,6 +113,7 @@ fn correct_renaming_cleanup() {
     create_dir_all(path.join(TEST_FILE)).unwrap();
 
     let duration = Duration::ZERO;
+
     cleanup_service(&vec![path], &duration, &duration, false, false).unwrap(); // File 0
 
     create_dir_all(path.join(TEST_FILE)).unwrap();

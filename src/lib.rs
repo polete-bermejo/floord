@@ -1,5 +1,4 @@
-mod services;
-pub use services::{cleanup_service, saving_service};
+pub mod services;
 
 pub const SOON_DELETED: &str = "SoonDeleted";
 pub const SECURE: &str = "Secure";

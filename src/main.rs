@@ -1,6 +1,6 @@
 use clap::{CommandFactory, FromArgMatches, Parser};
 use dirs::{audio_dir, document_dir, download_dir, picture_dir, video_dir};
-use floord::{cleanup_service, saving_service};
+use floord::services::{cleanup_service, saving_service};
 use serde::Deserialize;
 use std::path::PathBuf;
 use std::sync::Arc;
