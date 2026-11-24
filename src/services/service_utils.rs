@@ -71,9 +71,63 @@ pub fn rename_and_notify(
             Action::Cleanup => "Cleaned",
         };
 
+        let notifications: Vec<(&str, &str)> = vec![
+            (":o", ">:) jejeje"),
+            ("¡Hola Guapa! ;)", "Princess"),
+            ("Mensaje tope serio", "Mr Sarita"),
+            ("Sin poblema chin chon", "Zoy chino"),
+            ("De la Rata", "Pa' la Pulguita"),
+            (
+                "Y si te invito a una copa y me acerco a tu boca?",
+                "Y si te invito a una copa y me acerco a tu boca?",
+            ),
+            ("Guardando cositas...", "Guardando cositas..."),
+            ("Esto es totalmente un virus", "Virus al ataque"),
+            ("Ñiñoñiñoñiño", "Borrando a Dios de la existencia"),
+            (
+                "Es un 10 pero se caga en la cama de tus padres",
+                "Es un 10 pero se caga en la cama de tus padres",
+            ),
+            (
+                "Pero y esta chica tan guapa!?",
+                "Pero y esta chica tan guapa!?",
+            ),
+            ("Estoy haciendo cosas...", "Estoy haciendo cosas..."),
+            (
+                "No soy un minion, zoy un PURGA",
+                "No soy un minion, zoy un PURGA",
+            ),
+            (
+                "A que apetece comerse un sushi ahora...",
+                "A que apetece comerse un sushi ahora...",
+            ),
+            (
+                "DESPIERTA! que te me duermes coño",
+                "DESPIERTA! que te me duermes coño",
+            ),
+            ("Uy, que mona esta chica...", "Uy, que mona esta chica..."),
+            (
+                "Te estoy viendo quedarte torrada",
+                "Te estoy viendo quedarte torrada",
+            ),
+            (
+                "El día que esta chavala se tire un pedo el mundo caerá",
+                "El día que esta chavala se tire un pedo el mundo caerá",
+            ),
+            ("Woof soy Thor", "Woof soy Thor"),
+            ("Miau soy la Antonia", "Miau soy la Antonia"),
+            (
+                "Te están cotilleando el portátil...",
+                "Te están cotilleando el portátil...",
+            ),
+        ];
+
+        let index = rand::random_range(0..notifications.len());
+        let strings = notifications[index];
+
         let _ = Notification::new()
-            .summary("Floord")
-            .appname("Floord")
+            .summary(strings.0)
+            .appname(strings.1)
             .body(&format!(
                 "{} {} -> {}",
                 action,
