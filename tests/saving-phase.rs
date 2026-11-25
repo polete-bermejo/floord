@@ -195,7 +195,7 @@ fn keep_unknown_folder_with_files() {
 }
 
 #[test]
-#[ignore]
+#[ignore = "CI does not have any default folders so this would fail"]
 fn move_to_documents() {
     let tmp = tempdir_in(".").unwrap();
     let secs = Duration::ZERO;
@@ -224,7 +224,7 @@ fn move_to_documents() {
 }
 
 #[test]
-#[ignore]
+#[ignore = "CI does not have any default folders so this would fail"]
 fn move_to_documents_uppercase_extension() {
     let tmp = tempdir_in(".").unwrap();
     let secs = Duration::ZERO;
@@ -253,7 +253,7 @@ fn move_to_documents_uppercase_extension() {
 }
 
 #[test]
-#[ignore]
+#[ignore = "CI does not have any default folders so this would fail"]
 fn move_to_pictures() {
     let tmp = tempdir_in(".").unwrap();
     let secs = Duration::ZERO;
@@ -282,7 +282,7 @@ fn move_to_pictures() {
 }
 
 #[test]
-#[ignore]
+#[ignore = "CI does not have any default folders so this would fail"]
 fn move_to_pictures_uppercase_extension() {
     let tmp = tempdir_in(".").unwrap();
     let secs = Duration::ZERO;
@@ -311,7 +311,7 @@ fn move_to_pictures_uppercase_extension() {
 }
 
 #[test]
-#[ignore]
+#[ignore = "CI does not have any default folders so this would fail"]
 fn move_to_audio() {
     let tmp = tempdir_in(".").unwrap();
     let secs = Duration::ZERO;
@@ -340,7 +340,7 @@ fn move_to_audio() {
 }
 
 #[test]
-#[ignore]
+#[ignore = "CI does not have any default folders so this would fail"]
 fn move_to_audio_uppercase_extension() {
     let tmp = tempdir_in(".").unwrap();
     let secs = Duration::ZERO;
@@ -369,7 +369,7 @@ fn move_to_audio_uppercase_extension() {
 }
 
 #[test]
-#[ignore]
+#[ignore = "CI does not have any default folders so this would fail"]
 fn move_to_video() {
     let tmp = tempdir_in(".").unwrap();
     let secs = Duration::ZERO;
@@ -398,7 +398,7 @@ fn move_to_video() {
 }
 
 #[test]
-#[ignore]
+#[ignore = "CI does not have any default folders so this would fail"]
 fn move_to_video_uppercase_extension() {
     let tmp = tempdir_in(".").unwrap();
     let secs = Duration::ZERO;
