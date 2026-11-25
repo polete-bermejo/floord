@@ -87,6 +87,7 @@ fn organizer_delay() {
 }
 
 #[test]
+#[ignore = "CI does not have any default folders so this would fail"]
 fn organizer_inbox_error() {
     let executable = std::env::var("CARGO_BIN_EXE_floord").unwrap();
     let tmp = tempdir_in(".").unwrap();
