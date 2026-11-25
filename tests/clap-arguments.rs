@@ -99,10 +99,11 @@ fn organizer_inbox_error() {
         .arg(wrong_path)
         .output()
         .unwrap();
-    let output = String::from_utf8_lossy_owned(output.stdout);
-    assert_eq!(
-        output.trim(),
-        "Inbox path does not exist nor is a directory"
+    let output = String::from_utf8_lossy_owned(output.stderr);
+    assert!(
+        output
+            .trim()
+            .contains("Inbox path does not exist nor is a directory")
     );
 }
 
@@ -222,9 +223,10 @@ fn cleanup_paths_error() {
         .output()
         .unwrap();
     let output = String::from_utf8_lossy_owned(output.stderr);
-    assert_eq!(
-        output.trim(),
-        "Cleanup returned an error: No such file or directory (os error 2)"
+    assert!(
+        output
+            .trim()
+            .contains("Cleanup returned an error: No such file or directory (os error 2)")
     );
 }
 

@@ -1,6 +1,7 @@
 use clap::{CommandFactory, FromArgMatches, Parser};
 use dirs::{audio_dir, document_dir, download_dir, picture_dir, video_dir};
 use floord::services::{cleanup_service, saving_service};
+use log::{error, info, warn};
 use serde::Deserialize;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -100,7 +101,7 @@ struct Args {
 
 impl Default for Args {
     fn default() -> Self {
-        println!("Running default parameters");
+        warn!("Running default parameters");
         Self {
             organizer: true,
             inbox: None,
@@ -118,18 +119,19 @@ impl Default for Args {
 }
 
 fn run_organizer(cli_args: &Args) {
+    info!("Executing organizer!");
     let inbox_path = cli_args
         .inbox
         .clone()
         .unwrap_or(if let Some(dir) = download_dir() {
             dir
         } else {
-            println!("Default path not found (default: Downloads folder)");
+            warn!("Default path not found (default: Downloads folder)");
             return;
         });
 
     if !inbox_path.is_dir() {
-        println!("Inbox path does not exist nor is a directory");
+        error!("Inbox path does not exist nor is a directory");
         return;
     }
 
@@ -139,39 +141,40 @@ fn run_organizer(cli_args: &Args) {
         loop {
             match saving_service(&inbox_path, &delay, cli_args.notify) {
                 Ok(report) => {
-                    println!(
+                    info!(
                         "Organized: {} saved, {} skipped, {} failed",
                         report.saved,
                         report.skipped,
                         report.failed.len()
                     );
                     for failure in &report.failed {
-                        eprintln!(
+                        error!(
                             "failure in: {}, error: {}",
                             failure.path.display(),
                             failure.error
                         );
                     }
                 }
-                Err(e) => eprintln!("organizer fatal error: {e}"),
+                Err(e) => error!("organizer fatal error: {e}"),
             }
             sleep(O_LOOP_INTERVAL);
         }
     }
     match saving_service(&inbox_path, &delay, cli_args.notify) {
         Ok(report) => {
-            println!(
+            info!(
                 "Organized: {} saved, {} skipped, {} failed",
                 report.saved,
                 report.skipped,
                 report.failed.len()
             );
         }
-        Err(e) => eprintln!("Organizer returned an error: {e}"),
+        Err(e) => error!("Organizer returned an error: {e}"),
     }
 }
 
 fn run_cleanup(cli_args: &Args) {
+    info!("Executing cleanup!");
     let mut paths = cli_args.paths.clone();
     if paths.is_empty() {
         if let Some(got) = document_dir() {
@@ -188,7 +191,7 @@ fn run_cleanup(cli_args: &Args) {
         }
     }
     if paths.is_empty() {
-        eprintln!("Paths empty");
+        error!("Paths empty, couldn't get any default path for cleanup service");
         return;
     }
     let paths = paths.iter().map(PathBuf::as_path).collect();
@@ -204,7 +207,7 @@ fn run_cleanup(cli_args: &Args) {
                 cli_args.notify,
             ) {
                 Ok(report) => {
-                    println!(
+                    info!(
                         "Cleaned: {} cleaned, {} deleted, {} skipped, {} failed",
                         report.cleaned,
                         report.deleted,
@@ -212,14 +215,14 @@ fn run_cleanup(cli_args: &Args) {
                         report.failed.len()
                     );
                     for failure in &report.failed {
-                        eprintln!(
+                        error!(
                             "failure in: {}, error: {}",
                             failure.path.display(),
                             failure.error
                         );
                     }
                 }
-                Err(e) => eprintln!("cleanup fatal error: {e}"),
+                Err(e) => error!("cleanup fatal error: {e}"),
             }
             sleep(C_LOOP_INTERVAL);
         }
@@ -232,7 +235,7 @@ fn run_cleanup(cli_args: &Args) {
         cli_args.notify,
     ) {
         Ok(report) => {
-            println!(
+            info!(
                 "Cleaned: {} cleaned, {} deleted, {} skipped, {} failed",
                 report.cleaned,
                 report.deleted,
@@ -240,12 +243,13 @@ fn run_cleanup(cli_args: &Args) {
                 report.failed.len()
             );
         }
-        Err(e) => eprintln!("Cleanup returned an error: {e}"),
+        Err(e) => error!("Cleanup returned an error: {e}"),
     }
-    println!("Cleanup done!");
+    info!("Cleanup done!");
 }
 
 fn main() {
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
     let mut cmd = Args::command();
     if let Some(dir) = dirs::config_dir() {
         cmd = cmd.about(format!(
@@ -254,7 +258,10 @@ fn main() {
             dir.join("floord/config.toml").display()
         ));
     }
-    let arguments = Args::from_arg_matches(&cmd.get_matches()).unwrap();
+    let Ok(arguments) = Args::from_arg_matches(&cmd.get_matches()) else {
+        error!("Couldn't get arguments");
+        return;
+    };
 
     let cli_args: Arc<Args> = match arguments.config {
         Some(file_path) => {
