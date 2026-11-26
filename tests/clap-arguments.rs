@@ -24,7 +24,7 @@ const CONFIG: &str = "--config";
 #[test]
 #[ignore = "CI does not have any default folders so this would fail"]
 fn organizer_solo() {
-    let executable = std::env::var("CARGO_BIN_EXE_floord").unwrap();
+    let executable = env!("CARGO_BIN_EXE_floord");
 
     let status = Command::new(executable).arg(ORGANIZER).status().unwrap();
     assert!(ExitStatus::success(&status));
@@ -33,7 +33,7 @@ fn organizer_solo() {
 #[test]
 #[ignore = "CI does not have any default folders so this would fail"]
 fn cleanup_solo() {
-    let executable = std::env::var("CARGO_BIN_EXE_floord").unwrap();
+    let executable = env!("CARGO_BIN_EXE_floord");
 
     let status = Command::new(executable).arg(CLEANUP).status().unwrap();
     assert!(ExitStatus::success(&status));
@@ -42,7 +42,7 @@ fn cleanup_solo() {
 #[test]
 #[ignore = "CI does not have any default folders so this would fail"]
 fn config_solo() {
-    let executable = std::env::var("CARGO_BIN_EXE_floord").unwrap();
+    let executable = env!("CARGO_BIN_EXE_floord");
 
     let status = Command::new(executable)
         .arg(CONFIG)
@@ -58,7 +58,7 @@ fn config_solo() {
 
 #[test]
 fn organizer_inbox() {
-    let executable = std::env::var("CARGO_BIN_EXE_floord").unwrap();
+    let executable = env!("CARGO_BIN_EXE_floord");
     let tmp = tempdir_in(".").unwrap();
 
     let status = Command::new(executable)
@@ -72,7 +72,7 @@ fn organizer_inbox() {
 
 #[test]
 fn organizer_delay() {
-    let executable = std::env::var("CARGO_BIN_EXE_floord").unwrap();
+    let executable = env!("CARGO_BIN_EXE_floord");
     let tmp = tempdir_in(".").unwrap();
 
     let status = Command::new(executable)
@@ -89,7 +89,7 @@ fn organizer_delay() {
 #[test]
 #[ignore = "CI does not have any default folders so this would fail"]
 fn organizer_inbox_error() {
-    let executable = std::env::var("CARGO_BIN_EXE_floord").unwrap();
+    let executable = env!("CARGO_BIN_EXE_floord");
     let tmp = tempdir_in(".").unwrap();
     let wrong_path = tmp.path().to_path_buf().join("something");
 
@@ -109,7 +109,7 @@ fn organizer_inbox_error() {
 
 #[test]
 fn organizer_incompatible_flag() {
-    let executable = std::env::var("CARGO_BIN_EXE_floord").unwrap();
+    let executable = env!("CARGO_BIN_EXE_floord");
 
     let status = Command::new(executable)
         .arg(ORGANIZER)
@@ -121,7 +121,7 @@ fn organizer_incompatible_flag() {
 
 #[test]
 fn organizer_incompatible_config_flag() {
-    let executable = std::env::var("CARGO_BIN_EXE_floord").unwrap();
+    let executable = env!("CARGO_BIN_EXE_floord");
 
     let status = Command::new(executable)
         .arg(ORGANIZER)
@@ -133,7 +133,7 @@ fn organizer_incompatible_config_flag() {
 
 #[test]
 fn organizer_incompatible_paths_flag() {
-    let executable = std::env::var("CARGO_BIN_EXE_floord").unwrap();
+    let executable = env!("CARGO_BIN_EXE_floord");
 
     let status = Command::new(executable)
         .arg(ORGANIZER)
@@ -149,7 +149,7 @@ fn organizer_incompatible_paths_flag() {
 
 #[test]
 fn cleanup_paths() {
-    let executable = std::env::var("CARGO_BIN_EXE_floord").unwrap();
+    let executable = env!("CARGO_BIN_EXE_floord");
     let tmp = tempdir_in(".").unwrap();
 
     let status = Command::new(executable)
@@ -163,7 +163,7 @@ fn cleanup_paths() {
 
 #[test]
 fn cleanup_span() {
-    let executable = std::env::var("CARGO_BIN_EXE_floord").unwrap();
+    let executable = env!("CARGO_BIN_EXE_floord");
     let tmp = tempdir_in(".").unwrap();
 
     let status = Command::new(executable)
@@ -179,7 +179,7 @@ fn cleanup_span() {
 
 #[test]
 fn cleanup_grace() {
-    let executable = std::env::var("CARGO_BIN_EXE_floord").unwrap();
+    let executable = env!("CARGO_BIN_EXE_floord");
     let tmp = tempdir_in(".").unwrap();
 
     let status = Command::new(executable)
@@ -195,7 +195,7 @@ fn cleanup_grace() {
 
 #[test]
 fn cleanup_span_grace() {
-    let executable = std::env::var("CARGO_BIN_EXE_floord").unwrap();
+    let executable = env!("CARGO_BIN_EXE_floord");
     let tmp = tempdir_in(".").unwrap();
 
     let status = Command::new(executable)
@@ -214,7 +214,7 @@ fn cleanup_span_grace() {
 #[test]
 #[cfg(unix)]
 fn cleanup_paths_error() {
-    let executable = std::env::var("CARGO_BIN_EXE_floord").unwrap();
+    let executable = env!("CARGO_BIN_EXE_floord");
 
     let output = Command::new(executable)
         .arg(CLEANUP)
@@ -232,7 +232,7 @@ fn cleanup_paths_error() {
 
 #[test]
 fn cleanup_config_error() {
-    let executable = std::env::var("CARGO_BIN_EXE_floord").unwrap();
+    let executable = env!("CARGO_BIN_EXE_floord");
 
     let status = Command::new(executable)
         .arg(CLEANUP)
@@ -244,7 +244,7 @@ fn cleanup_config_error() {
 
 #[test]
 fn cleanup_incompatible_flag() {
-    let executable = std::env::var("CARGO_BIN_EXE_floord").unwrap();
+    let executable = env!("CARGO_BIN_EXE_floord");
 
     let status = Command::new(executable)
         .arg(CLEANUP)
@@ -260,10 +260,10 @@ fn cleanup_incompatible_flag() {
 
 #[test]
 fn config_flags_error() {
-    let executable = std::env::var("CARGO_BIN_EXE_floord").unwrap();
+    let executable = env!("CARGO_BIN_EXE_floord");
 
     let get_status = |arg: &str| {
-        Command::new(&executable)
+        Command::new(executable)
             .arg(CONFIG)
             .arg("config_template.toml")
             .arg(arg)
